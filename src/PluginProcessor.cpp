@@ -179,16 +179,11 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
 
     // lets write a simple delay thing
 
-    DBG("sizeofqueue" << delayTime*currentSampleRate);
-    DBG("delaytime" << delay_time);
-    DBG("samplerate" << currentSampleRate);
+//    DBG("sizeofqueue" << delayTime*currentSampleRate);
+//    DBG("delaytime" << delay_time);
+//    DBG("samplerate" << currentSampleRate);
        
     for(int i = 0; i<noOfSamples; i++){
-      // channelData1[i] = fileData1[playPosition+i];
-      // channelData2[i] = fileData2[playPosition+i];
-      // if(playPosition>=ooh){
-      //     playPosition = 0;
-      // }
 
        channelData1[i] += pad1.playFile(0);
        channelData2[i] += pad1.playFile(1);
@@ -200,20 +195,12 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
        channelData2[i] += pad3.playFile(1);
    }
        
-    //playPosition+=noOfSamples;
-
-    // distort and add delay after playing the file
-    for(int i = 0; i<noOfSamples; i++){
-        channelData1[i] = (delayCh1.get(sizeOfQueue)*0.5)+channelData1[i];
-        channelData2[i] = (delayCh2.get(sizeOfQueue)*0.5)+channelData2[i];
-        delayCh1.update(channelData1[i]);
-        delayCh2.update(channelData2[i]);
-    }
-
     if(check){
-        distortFn(channelData1, noOfSamples, d);
-        distortFn(channelData2, noOfSamples, d);
+        distortFn(buffer, d);
+        DBG("Distort");
     }
+
+    delay.apply(buffer, sizeOfQueue, d);
 
 }
 

@@ -12,6 +12,8 @@ class samplePad{
         const float* ch0;
         const float* ch1;
         int length;
+        static int nextid;
+        const int id;
 
     public:
         void startPlayback();

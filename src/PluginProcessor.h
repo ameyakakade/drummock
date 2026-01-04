@@ -45,8 +45,7 @@ public:
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
-    delayBuffer delayCh1;    
-    delayBuffer delayCh2;    
+    delayBuffer delay;    
 
     std::atomic<float> raw_vol = {1.0f};
     std::atomic<float> delayTime = {1.0f};

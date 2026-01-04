@@ -26,7 +26,9 @@ void convertFileIntoBuffer(const juce::File& file, juce::AudioBuffer<float>& buf
     }
 }
 
-samplePad::samplePad(){
+int samplePad::nextid = 1;
+
+samplePad::samplePad() : id(nextid++){
     playPosition = 0;
     playState = false;
     ch0 = NULL;
@@ -44,6 +46,7 @@ void samplePad::startPlayback(){
     if (ch0==NULL | ch1==NULL) {return;}
     playPosition = 0;
     playState = true;
+    DBG("ID" << id);
 }
 
 float samplePad::playFile(int ch){
