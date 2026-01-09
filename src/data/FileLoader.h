@@ -11,7 +11,7 @@ class samplePad{
         static int nextid;
 
     public:
-
+        int midiNote;
         const int id;
         samplePad();
         juce::AudioBuffer<float>* getFile();
@@ -20,9 +20,10 @@ class samplePad{
 
 class samplePadManager{
     private:
-        std::vector<std::unique_ptr<samplePad>> pads;
         int numOfPads; 
     public:
+        std::vector<std::unique_ptr<samplePad>> pads;
         void createPads(int no);
         void updatePadFile(int id, juce::File& inputFile);
+        juce::AudioBuffer<float>* getFileByMidiNote(int note);
 };

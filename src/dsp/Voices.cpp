@@ -50,7 +50,7 @@ void voiceManager::prepare(int num){
     for(int i = 0; i<num; i++){
         voices.emplace_back(std::make_unique<voice>());
     }
-    DBG("added voices:"<<num);
+    //DBG("added voices:"<<num);
 
 }
 
@@ -66,7 +66,7 @@ void voiceManager::assignVoice(juce::AudioBuffer<float>& buffer){
     for(int i = 0; i<numVoices; i++){
         if(!voices[i]->active){
             voices[i]->startVoice(buffer, 0);
-            DBG("assigned to:"<<i);
+            DBG("assigned at"<<i);
             break;
         }
     }

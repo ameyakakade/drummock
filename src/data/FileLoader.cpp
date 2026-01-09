@@ -11,7 +11,7 @@ void convertFileIntoBuffer(const juce::File& file, juce::AudioBuffer<float>& buf
 
     if(reader!=nullptr){
 
-        DBG("the pointer for file reader is not null");
+        //DBG("the pointer for file reader is not null");
         // we set the size for our audio buffer by giving it the number of samples
         // and channels in our audio reader
         buffer.setSize(reader->numChannels, reader->lengthInSamples);
@@ -47,11 +47,26 @@ void samplePadManager::createPads(int no){
         pads.emplace_back(std::make_unique<samplePad>());
     }
     for(int i = 0; i<no; i++){
-        DBG(pads[i]->id);
+        //DBG(pads[i]->id);
+    }
+    int start = 60;
+    for(auto& pad : pads){
+        pad->midiNote = start;
+        start++;
     }
 }
 
 
 void samplePadManager::updatePadFile(int id, juce::File& inputFile){
     pads[id]->updateFile(inputFile);
+}
+
+
+juce::AudioBuffer<float>* samplePadManager::getFileByMidiNote(int note){
+    for(auto& pad : pads){
+        if(pad->midiNote == note){
+            return pad->getFile();
+        }
+    }
+    return nullptr;
 }

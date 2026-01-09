@@ -29,6 +29,11 @@ AudioPluginAudioProcessor::AudioPluginAudioProcessor()
     juce::File kick("~/Documents/Music/demo/kick.wav");
     juce::File snare("~/Documents/Music/demo/snare.wav");
     juce::File hat("~/Documents/Music/demo/hat.wav");
+    juce::File openhat("~/Documents/Music/demo/openhat.wav");
+    juce::File stomp("~/Documents/Music/demo/stomp.wav");
+    juce::File b808("~/Documents/Music/demo/b808.wav");
+    juce::File fx("~/Documents/Music/demo/fx.wav");
+    juce::File clap("~/Documents/Music/demo/clap.wav");
 
     // create 10 sample pads
     samplePool.createPads(10);
@@ -36,7 +41,13 @@ AudioPluginAudioProcessor::AudioPluginAudioProcessor()
     samplePool.updatePadFile(0, kick);
     samplePool.updatePadFile(1, snare);
     samplePool.updatePadFile(2, hat);
+    samplePool.updatePadFile(3, openhat);
+    samplePool.updatePadFile(4, stomp);
+    samplePool.updatePadFile(5, b808);
+    samplePool.updatePadFile(6, fx);
+    samplePool.updatePadFile(7, clap);
     pool.prepare(30);
+    pool.assignVoice(*samplePool.pads[2]->getFile());
 }
 
 AudioPluginAudioProcessor::~AudioPluginAudioProcessor()
@@ -170,25 +181,33 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
-    unsigned long noOfSamples = buffer.getNumSamples();
+    int noOfSamples = buffer.getNumSamples();
 
     float delay_time = delayTime.load(std::memory_order_relaxed);
     float d = raw_vol.load(std::memory_order_relaxed);
     bool check = distort.load(std::memory_order_relaxed);
     float sizeOfQueue = delayTime*currentSampleRate;
-
-        // 1. Get the address of the audio data for this channel
-    auto* channelData1 = buffer.getWritePointer (0);
-    auto* channelData2 = buffer.getWritePointer (1);
-
-    if(check){
-        distortFn(buffer, d);
-        DBG("Distort");
+    
+    int head = 0;
+    
+    for(const auto metadata : midiMessages){
+        auto msg = metadata.getMessage();
+        int time = metadata.samplePosition;
+        if(msg.isNoteOn()){
+            int note = msg.getNoteNumber();    
+            DBG(note);
+            auto *file = samplePool.getFileByMidiNote(note);
+            if(file){
+                pool.assignVoice(*file);
+            }else{
+                DBG("Note not found");
+            }
+        }
+        pool.renderAll(buffer, head, time);
+        head += time;
     }
-
-    delay.apply(buffer, sizeOfQueue, d);
-
-    pool.renderAll(buffer, 0, noOfSamples);
+    
+    pool.renderAll(buffer, head, noOfSamples);
 
 }
 
