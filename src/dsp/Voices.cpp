@@ -6,7 +6,7 @@ voice::voice(){
     playHead = 0;
 }
 
-void voice::startVoice(juce::AudioBuffer<float>& buffer, int midiNote, float vel){
+void voice::startVoice(juce::AudioBuffer<float>& buffer, int midiNote, float vel, double sRate){
     active = true;
     numSamples = buffer.getNumSamples();
     numChannels = buffer.getNumChannels();
@@ -14,17 +14,20 @@ void voice::startVoice(juce::AudioBuffer<float>& buffer, int midiNote, float vel
     assignedBuffer = &buffer;
     setMidiNote = midiNote;
     velocity = vel;
+    DBG("recieved sample rate" << sRate);
 }
 
-void voice::renderAudio(juce::AudioBuffer<float>& buffer, int startSample, int noOfSamples){
+void voice::renderAudio(juce::AudioBuffer<float>& buffer, int startSample, int endSample){
 
     int numBufferChannels = buffer.getNumChannels();
+    int noOfSamples = endSample - startSample;
 
     for(int ch = 0; ch<numBufferChannels && ch<numChannels; ch++){
         
         auto* sourceData = assignedBuffer->getReadPointer(ch);
         auto* channelData = buffer.getWritePointer(ch);
         int playHeadNow = playHead;
+        
 
         for(int i = startSample; i<startSample+noOfSamples; i++){
             if(playHeadNow>=numSamples) break;
@@ -36,9 +39,10 @@ void voice::renderAudio(juce::AudioBuffer<float>& buffer, int startSample, int n
     playHead += noOfSamples;
 
     if(playHead>=numSamples){
-        playHead = numSamples;
+        //playHead = numSamples;
         active = false;
         DBG("Voice stopped:");
+        velocity = 0;
     }
 }
 
@@ -55,18 +59,18 @@ void voiceManager::prepare(int num){
 
 }
 
-void voiceManager::renderAll(juce::AudioBuffer<float>& buffer, int startSample, int noOfSamples){
+void voiceManager::renderAll(juce::AudioBuffer<float>& buffer, int startSample, int endSample){
     for(auto& voice : voices){
         if(voice->active){
-            voice->renderAudio(buffer, startSample, noOfSamples);
+            voice->renderAudio(buffer, startSample, endSample);
         }
     }
 }
 
-void voiceManager::assignVoice(juce::AudioBuffer<float>& buffer, int midiNote, float velocity){
+void voiceManager::assignVoice(juce::AudioBuffer<float>& buffer, int midiNote, float velocity, double sRate){
     for(int i = 0; i<numVoices; i++){
         if(!voices[i]->active){
-            voices[i]->startVoice(buffer, midiNote, velocity);
+            voices[i]->startVoice(buffer, midiNote, velocity, sRate);
             DBG("assigned at"<<i);
             break;
         }

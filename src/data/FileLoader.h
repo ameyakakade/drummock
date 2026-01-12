@@ -2,7 +2,7 @@
 #include <juce_audio_formats/juce_audio_formats.h>
 #include "../dsp/Voices.h"
 
-void convertFileIntoBuffer(const juce::File& file, juce::AudioBuffer<float>& buffer);
+double convertFileIntoBuffer(const juce::File& file, juce::AudioBuffer<float>& buffer);
 
 // sample pad holds a audio buffer
 class samplePad{
@@ -16,6 +16,7 @@ class samplePad{
         samplePad();
         juce::AudioBuffer<float>* getFile();
         void updateFile(juce::File& file);
+        double sampleRate;
 };
 
 class samplePadManager{
@@ -25,5 +26,5 @@ class samplePadManager{
         std::vector<std::unique_ptr<samplePad>> pads;
         void createPads(int no);
         void updatePadFile(int id, juce::File& inputFile);
-        juce::AudioBuffer<float>* getFileByMidiNote(int note);
+        std::pair<juce::AudioBuffer<float>*, double> getFileByMidiNote(int note);
 };

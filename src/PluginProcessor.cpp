@@ -141,7 +141,7 @@ bool AudioPluginAudioProcessor::isBusesLayoutSupported (const BusesLayout& layou
     if (layouts.getMainOutputChannelSet() != layouts.getMainInputChannelSet())
         return false;
    #endif
-
+;
     return true;
   #endif
 }
@@ -180,17 +180,21 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
             int note = msg.getNoteNumber();    
             DBG(note);
             float v = msg.getFloatVelocity();
-            auto *file = samplePool.getFileByMidiNote(note);
+            auto pair = samplePool.getFileByMidiNote(note);
+            auto* file = pair.first;
+            double sRate = pair.second;
             if(file){
-                pool.assignVoice(*file, note, v);
+                pool.assignVoice(*file, note, v, sRate);
             }else{
                 DBG("Note not found");
             }
         }
+        if(msg.isNoteOff()){
+            DBG("Note off");
+        }
         pool.renderAll(buffer, head, time);
-        head += time;
+        head = time;
     }
-    
     pool.renderAll(buffer, head, noOfSamples);
 
 }

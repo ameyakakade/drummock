@@ -3,7 +3,7 @@
 #include "../dsp/Voices.h"
 
 // passing in the reference to the buffer in which file is to be loaded into
-void convertFileIntoBuffer(const juce::File& file, juce::AudioBuffer<float>& buffer){
+double convertFileIntoBuffer(const juce::File& file, juce::AudioBuffer<float>& buffer){
     juce::AudioFormatManager formatManager;
     formatManager.registerBasicFormats();
     auto* reader = formatManager.createReaderFor(file);
@@ -20,10 +20,13 @@ void convertFileIntoBuffer(const juce::File& file, juce::AudioBuffer<float>& buf
         reader->read(&buffer, 0, reader->lengthInSamples, 0, true, true);
         // (address of the buffer, start at 0 of buffer, no of samples, start at 0 of reader, some stereo shit)
 
+        double sRate = reader->sampleRate;
 
         // we do not need the reader now so just delete it.
         // data is stored in the audio buffer
         delete reader; 
+
+        return sRate;
     }
 }
 
@@ -33,7 +36,8 @@ samplePad::samplePad() : id(nextid++){
 }
 
 void samplePad::updateFile(juce::File& file){
-    convertFileIntoBuffer(file, sample);
+    sampleRate = convertFileIntoBuffer(file, sample);
+    DBG("sample rate:" << sampleRate);
 }
 
 // this will return a pointer to the audio buffer
@@ -62,11 +66,13 @@ void samplePadManager::updatePadFile(int id, juce::File& inputFile){
 }
 
 
-juce::AudioBuffer<float>* samplePadManager::getFileByMidiNote(int note){
+std::pair<juce::AudioBuffer<float>*, double> samplePadManager::getFileByMidiNote(int note){
+    std::pair<juce::AudioBuffer<float>*, double> res{nullptr, 0};
     for(auto& pad : pads){
         if(pad->midiNote == note){
-            return pad->getFile();
+            res = {pad->getFile(), pad->sampleRate};
+            return res;
         }
     }
-    return nullptr;
+    return res;
 }

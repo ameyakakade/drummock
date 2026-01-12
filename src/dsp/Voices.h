@@ -2,10 +2,13 @@
 #include <juce_audio_formats/juce_audio_formats.h>
 
 class voice{
+    private:
+        int playHead;
+
     public:
         bool active;
 
-        int playHead;
+        float playRatio;
         int numSamples;
         int numChannels;
 
@@ -15,8 +18,8 @@ class voice{
         juce::AudioBuffer<float>* assignedBuffer;
 
         voice();
-        void startVoice(juce::AudioBuffer<float>& buffer, int midiNote, float vel);
-        void renderAudio(juce::AudioBuffer<float>& buffer, int startSample, int noOfSamples);
+        void startVoice(juce::AudioBuffer<float>& buffer, int midiNote, float vel, double sRate);
+        void renderAudio(juce::AudioBuffer<float>& buffer, int startSample, int endSample);
 };
 
 class voiceManager{
@@ -26,6 +29,6 @@ class voiceManager{
         int numVoices;
     public:
         void prepare(int num);
-        void renderAll(juce::AudioBuffer<float>& buffer, int startSample, int noOfSamples);
-        void assignVoice(juce::AudioBuffer<float>& buffer, int midiNote, float velocity);
+        void renderAll(juce::AudioBuffer<float>& buffer, int startSample, int endSample);
+        void assignVoice(juce::AudioBuffer<float>& buffer, int midiNote, float velocity, double sRate);
 };
