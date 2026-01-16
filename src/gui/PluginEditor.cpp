@@ -18,7 +18,7 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
 
     minLength = 1024*4; //minimum length for playhead to be drawn
     decayRate = 0.9f;
-    flashes.resize(30);
+    flashes.resize(8);
 
     int x = 80;
     int y = 30;
@@ -87,12 +87,7 @@ void AudioPluginAudioProcessorEditor::paint (juce::Graphics& g)
             int len = processorRef.pool.states[t]->length.load(std::memory_order_relaxed);
             int posi = processorRef.pool.states[t]->position.load(std::memory_order_relaxed);
             int id = processorRef.pool.states[t]->id.load(std::memory_order_relaxed);
-            
-
-            flashes[t].first = true;
-
             g.setColour (juce::Colours::red);
-
             if(len>minLength){
                 float offset = (float)posi/(float)len*150.0f;
                 int x = rects[id].getX();
@@ -100,20 +95,20 @@ void AudioPluginAudioProcessorEditor::paint (juce::Graphics& g)
                 g.drawLine(x + offset, y, x + offset, y + 150, 3);
             }
         }
-        if(flashes[t].first){
-            int id = processorRef.pool.states[t]->id.load(std::memory_order_relaxed);
-            g.setColour (juce::Colours::cyan);
-            g.setOpacity(flashes[t].second);
-            g.fillRect(rects[id]);
-            flashes[t].second *= decayRate;
-            g.setOpacity(0.8);
-            if(flashes[t].second<0.10){
-                flashes[t].first = false;
-            }
-        }else{
-            flashes[t].second = 0.8;
-        }
+    }
 
+    for(int i=0; i<flashes.size(); i++){
+        bool flag = processorRef.padStates[i]->load(std::memory_order_relaxed);
+        if(flag){
+            flashes[i] = 1.0f;
+            processorRef.padStates[i]->store(false, std::memory_order_relaxed);
+        }
+        else{
+            g.setColour (juce::Colours::cyan);
+            g.setOpacity(flashes[i]);
+            g.fillRect(rects[i]);
+            flashes[i] *= decayRate;
+        }
     }
 
     g.setOpacity(1);

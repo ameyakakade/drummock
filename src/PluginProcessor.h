@@ -62,6 +62,7 @@ public:
 
     std::vector<std::unique_ptr<juce::AudioThumbnail>> thumbs;
     juce::AudioThumbnailCache thumbnailCache;
+    std::vector<std::unique_ptr<std::atomic<bool>>> padStates;
 
 private:
     int playPosition = 0;

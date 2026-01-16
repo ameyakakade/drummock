@@ -67,7 +67,7 @@ private:
     float decayRate;
 
     std::vector<juce::Rectangle<int>> rects;
-    std::vector<std::pair<bool, float>> flashes;
+    std::vector<float> flashes;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioPluginAudioProcessorEditor)
     // TRANSLATION: "This is a Magic Macro (a shortcut)."

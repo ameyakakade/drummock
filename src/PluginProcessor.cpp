@@ -47,6 +47,7 @@ AudioPluginAudioProcessor::AudioPluginAudioProcessor()
 
     for(int i=0; i<no; i++){
         thumbs.emplace_back(std::make_unique<juce::AudioThumbnail>(noSFT, formatManager, thumbnailCache));
+        padStates.emplace_back(std::make_unique<std::atomic<bool>>());
     }
 
     thumbs[0]->setSource(new juce::FileInputSource(kick));
@@ -208,6 +209,7 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
             }else{
                 DBG("Note not found");
             }
+            padStates[data->id]->store(true, std::memory_order_relaxed);
         }
         if(msg.isNoteOff()){
             DBG("Note off");
