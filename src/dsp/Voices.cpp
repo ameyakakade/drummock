@@ -17,7 +17,6 @@ void voice::startVoice(juce::AudioBuffer<float>& buffer, int padNo, int midiNote
     padID = padNo;
     velocity = vel;
     playRatio = sRate/bufferSRate; 
-    DBG("playratio" << playRatio);
 }
 
 void voice::renderAudio(juce::AudioBuffer<float>& buffer, int startSample, int endSample){
@@ -47,7 +46,6 @@ void voice::renderAudio(juce::AudioBuffer<float>& buffer, int startSample, int e
     if(playHead+1>=numSamples){
         playHead = numSamples;
         active = false;
-        DBG("Voice stopped:");
         velocity = 0;
     }
 }
@@ -80,7 +78,6 @@ void voiceManager::assignVoice(juce::AudioBuffer<float>& buffer, int padNo, int 
         if(!voices[i]->active){
             voices[i]->startVoice(buffer, padNo, midiNote, velocity, sRate, bufferSRate);
             updateState(i, true, buffer.getNumSamples()*sRate/bufferSRate, 0, -1, padNo);
-            DBG("assigned at"<<i);
             break;
         }
     }

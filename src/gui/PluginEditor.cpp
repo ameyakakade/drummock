@@ -1,20 +1,11 @@
 #include "../PluginProcessor.h"
 #include "PluginEditor.h"
-// TRANSLATION: "I need the blueprints for both the Brain (Processor) and the Face (Editor)."
 
 //==============================================================================
 AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAudioProcessor& p)
     : AudioProcessorEditor (&p), processorRef (p)
-      // the classname::classname tells the compiler that this function is a constructor of the "AudioPluginAudioProcessorEditor" class
-// TRANSLATION: "I am defining the Setup Function (Constructor) for the class AudioPluginAudioProcessorEditor."
-// 1. (AudioPluginAudioProcessor& p): "I am accepting the Brain (p) as an input."
-// 2. : (The Colon): "BEFORE we start the main code inside { }, do these setup tasks first:"
-// 3. AudioProcessorEditor (&p): "Build the Parent Class (the JUCE foundation). It demands the Brain, so pass 'p' to it."
-// 4. , processorRef (p): "Save 'p' into my personal variable 'processorRef' so I can use it later." we defined the reference in the .h file
 {
     juce::ignoreUnused (processorRef);
-    // TRANSLATION: "Hey Compiler, don't yell at me (Warning) for not using 'processorRef' in this function. 
-    // I know I haven't touched it yet, just ignore it."
 
     minLength = 1024*4; //minimum length for playhead to be drawn
     decayRate = 0.9f;
@@ -55,25 +46,23 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
     // TRANSLATION: "Set the window width to 400 pixels and height to 300 pixels."
     //
     startTimerHz(60);
+    
+    highX = highY = -1;
+
 }
 
 AudioPluginAudioProcessorEditor::~AudioPluginAudioProcessorEditor()
 {
-    // TRANSLATION: "The Cleanup Function (Destructor). 
-    // It is empty because we haven't created any messy manual memory (pointers) to clean up."
+
 }
 
 //==============================================================================
 void AudioPluginAudioProcessorEditor::paint (juce::Graphics& g)
-// TRANSLATION: "I am defining the paint function belonging to AudioPluginAudioProcessorEditor."
-// this g is passed by the os when it calls the paint fn
 {
-    // (Our component is opaque, so we must completely fill the background with a solid colour)
     g.fillAll (juce::Colours::black);
-    // TRANSLATION: "Artist (g), please paint the ENTIRE window (fillAll) with a specific color."
-    // "Look up the standard 'Background Color' from the JUCE theme manager (LookAndFeel)."
+
     g.setColour (juce::Colours::cyan);
-    // TRANSLATION: "Artist (g), put down the paint roller and pick up a White Pen."
+
 
     for(int i=0; i<8; i++){
         auto& thumb = processorRef.thumbs[i];
@@ -111,6 +100,13 @@ void AudioPluginAudioProcessorEditor::paint (juce::Graphics& g)
         }
     }
 
+    if(highX!=-1 or highY!=-1){
+        g.setColour (juce::Colours::red);
+        g.setOpacity(0.8);
+        int r = 40;
+        g.fillEllipse(highX-(r/2), highY-(r/2), r, r);
+    }
+
     g.setOpacity(1);
 }
 
@@ -128,4 +124,28 @@ void AudioPluginAudioProcessorEditor::timerCallback(){
     gainSlider.setValue(gain);
     gain = std::fmod(gain+0.1, 5);
     repaint();
+}
+
+
+
+
+bool AudioPluginAudioProcessorEditor::isInterestedInFileDrag(const juce::StringArray &files){
+    return true;
+}
+
+void AudioPluginAudioProcessorEditor::fileDragEnter(const juce::StringArray &files, int x, int y){
+}
+
+void AudioPluginAudioProcessorEditor::fileDragMove(const juce::StringArray &files, int x, int y){
+    highX = x;
+    highY = y;
+}
+
+void AudioPluginAudioProcessorEditor::fileDragExit(const juce::StringArray &files){
+    highX = -1;
+    highY = -1;
+}
+
+void AudioPluginAudioProcessorEditor::filesDropped(const juce::StringArray &files, int x, int y){
+
 }

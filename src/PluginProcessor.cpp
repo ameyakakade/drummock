@@ -207,12 +207,10 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
             if(data->file){
                 pool.assignVoice(*data->file, data->id, note, v, data->sampleRate, currentSampleRate);
             }else{
-                DBG("Note not found");
             }
             padStates[data->id]->store(true, std::memory_order_relaxed);
         }
         if(msg.isNoteOff()){
-            DBG("Note off");
         }
         pool.renderAll(buffer, head, time);
         head = time;
