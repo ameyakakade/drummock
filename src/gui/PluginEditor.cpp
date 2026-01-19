@@ -152,7 +152,7 @@ void AudioPluginAudioProcessorEditor::filesDropped(const juce::StringArray &file
     highX = -1;
     highY = -1;
     int id = -1;
-    std::string path = files[0].toStdString();
+    int s = files.size();
     for(int i=0; i<8; i++){
         auto& rect = rects[i];
         int rx = rect.getX();
@@ -161,5 +161,12 @@ void AudioPluginAudioProcessorEditor::filesDropped(const juce::StringArray &file
         int w = rect.getWidth();
         if((x-rx<w) and (y-ry<h) and (x-rx>0) and (y-ry>0)) id = i;
     }
-    if(id!=-1) processorRef.updateFile(path, id);
+    if(id!=-1){
+        for(int i=0; i<s; i++){
+            std::string path = files[i].toStdString();
+            processorRef.updateFile(path, id);
+            id++;
+            if(id>=8) break;
+        }
+    }
 }
