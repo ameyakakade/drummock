@@ -15,6 +15,10 @@ juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout(){
         std::unique_ptr<juce::AudioProcessorParameterGroup> group = std::make_unique<juce::AudioProcessorParameterGroup> (name, name, "and");
         group->addChild(std::make_unique<juce::AudioParameterFloat> (juce::ParameterID{"Gain" + id, 1}, "Gain " + id, 0, 1, 1));
         group->addChild(std::make_unique<juce::AudioParameterFloat> (juce::ParameterID{"Pitch" + id, 1}, "Pitch " + id, 0.1, 3, 1));
+        group->addChild(std::make_unique<juce::AudioParameterFloat> (juce::ParameterID{"Start" + id, 1}, "Start " + id, 0.1, 3, 1));
+        group->addChild(std::make_unique<juce::AudioParameterFloat> (juce::ParameterID{"End" + id, 1}, "End " + id, 0.1, 3, 1));
+        group->addChild(std::make_unique<juce::AudioParameterFloat> (juce::ParameterID{"Attack" + id, 1}, "Attack " + id, 0.1, 3, 1));
+        group->addChild(std::make_unique<juce::AudioParameterFloat> (juce::ParameterID{"Decay" + id, 1}, "Decay " + id, 0.1, 3, 1));
         layout.add(std::move(group));
     }
     return layout; 
@@ -60,6 +64,10 @@ AudioPluginAudioProcessor::AudioPluginAudioProcessor()
 
     fillPointerArray(gain, "Gain", 8);
     fillPointerArray(pitch, "Pitch", 8);
+    fillPointerArray(start, "Start", 8);
+    fillPointerArray(end, "End", 8);
+    fillPointerArray(attack, "Attack", 8);
+    fillPointerArray(decay, "Decay", 8);
 }
 
 AudioPluginAudioProcessor::~AudioPluginAudioProcessor()

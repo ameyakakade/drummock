@@ -67,6 +67,10 @@ public:
 
     std::vector<std::atomic<float>*> gain;
     std::vector<std::atomic<float>*> pitch;
+    std::vector<std::atomic<float>*> start;
+    std::vector<std::atomic<float>*> end;
+    std::vector<std::atomic<float>*> attack;
+    std::vector<std::atomic<float>*> decay;
 
     void fillPointerArray(std::vector<std::atomic<float>*>& arr, std::string idtag, int idrange);
 

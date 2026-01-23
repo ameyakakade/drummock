@@ -77,7 +77,7 @@ void voiceManager::prepare(int num){
 void voiceManager::renderAll(juce::AudioBuffer<float>& buffer, int startSample, int endSample){
     for(int i=0; i<numVoices; i++){
         auto& voice = voices[i];
-        updateState(i, voice->active, -1, -1, endSample, -1);
+        updateState(i, voice->active, -1, -1, (endSample-startSample)*(voice->playRatio), -1);
         if(voice->active){
             voice->renderAudio(buffer, startSample, endSample);
         }
@@ -92,13 +92,13 @@ void voiceManager::assignVoice(juce::AudioBuffer<float>& buffer, int padNo, int 
         if(!voices[i]->active){
             assigned = true;
             voices[i]->startVoice(buffer, padNo, midiNote, velocity, sRate, bufferSRate);
-            updateState(i, true, buffer.getNumSamples()*sRate/bufferSRate, 0, -1, padNo);
+            updateState(i, true, buffer.getNumSamples(), 0, -1, padNo);
             break;
         }
     }
     if(!assigned){
         voices[oldest]->startVoice(buffer, padNo, midiNote, velocity, sRate, bufferSRate);
-        updateState(oldest, true, buffer.getNumSamples()*sRate/bufferSRate, 0, -1, padNo);
+        updateState(oldest, true, buffer.getNumSamples(), 0, -1, padNo);
     }
 }
 
@@ -108,7 +108,7 @@ void voiceManager::updateState(int i, bool state, int length, int pos, int posAd
     if(pos!=-1) states[i]->position.store(pos, std::memory_order_relaxed);
     if(posAdd!=-1){
         int posi = states[i]->position.load(std::memory_order_relaxed);
-        states[i]->position.store(posAdd+posi, std::memory_order_relaxed);
+        states[i]->position.store((posAdd)+posi, std::memory_order_relaxed);
     }
     if(ID!=-1) states[i]->id.store(ID, std::memory_order_relaxed);
 }
