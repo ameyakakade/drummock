@@ -57,7 +57,6 @@ public:
     std::atomic<float> raw_vol = {1.0f};
     std::atomic<float> delayTime = {1.0f};
     std::atomic<bool> distort = {false}; 
-    std::atomic<float> globalPitch = {1.0};
 
     samplePadManager samplePool;
     voiceManager pool;
@@ -72,6 +71,10 @@ public:
     std::vector<std::atomic<float>*> end;
     std::vector<std::atomic<float>*> attack;
     std::vector<std::atomic<float>*> decay;
+
+    std::atomic<float>* pbrange;
+    std::atomic<float>* velocitySen;
+    std::atomic<float> globalPitch;
 
     void fillPointerArray(std::vector<std::atomic<float>*>& arr, std::string idtag, int idrange);
 

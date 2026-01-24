@@ -5,11 +5,12 @@
 AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAudioProcessor& p)
     : AudioProcessorEditor (&p), processorRef (p)
 {
-    juce::ignoreUnused (processorRef);
+    setResizable(true, true);
 
     minLength = 1024*4; //minimum length for playhead to be drawn
     decayRate = 0.7f;
     flashes.resize(8);
+    selectedPad = 0;
 
     int x = 80;
     int y = 30;

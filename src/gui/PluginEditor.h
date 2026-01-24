@@ -35,6 +35,7 @@ private:
     std::vector<juce::Rectangle<int>> rects;
     std::vector<float> flashes;
 
+    int selectedPad;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioPluginAudioProcessorEditor)
 };

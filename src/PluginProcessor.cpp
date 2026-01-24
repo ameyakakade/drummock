@@ -21,6 +21,8 @@ juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout(){
         group->addChild(std::make_unique<juce::AudioParameterFloat> (juce::ParameterID{"Decay" + id, 1}, "Decay " + id, 0.1, 3, 1));
         layout.add(std::move(group));
     }
+    layout.add(std::make_unique<juce::AudioParameterInt> (juce::ParameterID{"Pitch_Range", 1}, "Pitch Bend Range", 1, 18, 2));
+    layout.add(std::make_unique<juce::AudioParameterFloat> (juce::ParameterID{"Velocity_Sens", 1}, "Velocity Sensitivity", 0, 3, 1.5));
     return layout; 
 }
 
@@ -68,6 +70,10 @@ AudioPluginAudioProcessor::AudioPluginAudioProcessor()
     fillPointerArray(end, "End", 8);
     fillPointerArray(attack, "Attack", 8);
     fillPointerArray(decay, "Decay", 8);
+
+    pbrange = states.getRawParameterValue("Pitch_Range");
+    velocitySen = states.getRawParameterValue("Velocity_Sens");
+    globalPitch.store(1, std::memory_order_relaxed);
 }
 
 AudioPluginAudioProcessor::~AudioPluginAudioProcessor()
@@ -192,8 +198,9 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     float d = raw_vol.load(std::memory_order_relaxed);
     bool check = distort.load(std::memory_order_relaxed);
     float sizeOfQueue = delayTime*currentSampleRate;
-    float range = 12;
+    float range = pbrange->load(std::memory_order_relaxed);
     float pbendfactor = std::pow(2, range/12.0);
+    float vsens = velocitySen->load(std::memory_order_relaxed);
     
     int head = 0;
     
@@ -207,9 +214,7 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
             auto data = samplePool.getFileByMidiNote(note);
             float pgain = gain[data->id]->load(std::memory_order_relaxed);
             float ppitch = pitch[data->id]->load(std::memory_order_relaxed);
-            float vsens = 1.6;
             float v = std::pow(msg.getFloatVelocity()*pgain, vsens);
-            DBG(v);
             if(data->file){
                 pool.assignVoice(*data->file, data->id, note, v, data->sampleRate*ppitch, currentSampleRate);
                 padStates[data->id]->store(true, std::memory_order_relaxed);
