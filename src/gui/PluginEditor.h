@@ -2,6 +2,12 @@
 
 #include "../PluginProcessor.h"
 
+class invisibleButton : public juce::Button{
+    public:
+        invisibleButton();    
+        void paintButton (juce::Graphics& g, bool isMouseOver, bool isButtonDown) override;
+};
+
 class AudioPluginAudioProcessorEditor final : public juce::AudioProcessorEditor, public juce::Timer, public juce::FileDragAndDropTarget
 
 {
@@ -25,17 +31,28 @@ private:
     AudioPluginAudioProcessor& processorRef;
 
     juce::Slider gainSlider; 
-    double gain;
+    juce::Slider pitchSlider; 
+    // juce::Slider gainSlider; 
+    
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> gainAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> pitchAttachment;
+
+    void updateAttachments(int selectedPadIndex);
+
     int minLength;
     float decayRate;
 
     int highX;
     int highY;
 
+    std::vector<std::unique_ptr<invisibleButton>> padButtons;
+
     std::vector<juce::Rectangle<int>> rects;
     std::vector<float> flashes;
 
-    int selectedPad;
+    std::atomic<int> selectedPad;
+
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioPluginAudioProcessorEditor)
 };
+

@@ -1,6 +1,5 @@
 #pragma once
 #include <juce_audio_formats/juce_audio_formats.h>
-#include "../dsp/Voices.h"
 
 double convertFileIntoBuffer(const juce::File& file, juce::AudioBuffer<float>& buffer);
 

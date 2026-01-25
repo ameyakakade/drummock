@@ -2,10 +2,7 @@
 #include "gui/PluginEditor.h"
 #include "dsp/Effects.h"
 #include "data/FileLoader.h"
-#include <queue>
-#include <algorithm>
-#include <random>
-
+               
 //helper fn to create parameters
 juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout(){
     juce::AudioProcessorValueTreeState::ParameterLayout layout;
@@ -23,8 +20,9 @@ juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout(){
     }
     layout.add(std::make_unique<juce::AudioParameterInt> (juce::ParameterID{"Pitch_Range", 1}, "Pitch Bend Range", 1, 18, 2));
     layout.add(std::make_unique<juce::AudioParameterFloat> (juce::ParameterID{"Velocity_Sens", 1}, "Velocity Sensitivity", 0, 3, 1.5));
-    return layout; 
+    return layout;     
 }
+
 
 //==============================================================================
 AudioPluginAudioProcessor::AudioPluginAudioProcessor()
@@ -194,10 +192,6 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
 
     int noOfSamples = buffer.getNumSamples();
 
-    float delay_time = delayTime.load(std::memory_order_relaxed);
-    float d = raw_vol.load(std::memory_order_relaxed);
-    bool check = distort.load(std::memory_order_relaxed);
-    float sizeOfQueue = delayTime*currentSampleRate;
     float range = pbrange->load(std::memory_order_relaxed);
     float pbendfactor = std::pow(2, range/12.0);
     float vsens = velocitySen->load(std::memory_order_relaxed);
@@ -286,7 +280,7 @@ void AudioPluginAudioProcessor::fillPointerArray(std::vector<std::atomic<float>*
     for(int i=0; i<idrange; i++){
         std::string id = idtag + std::to_string(i);
         std::atomic<float>* pointer = states.getRawParameterValue(id);
-        arr.push_back(pointer);
+        arr.push_back(pointer);        
     }
 }
 

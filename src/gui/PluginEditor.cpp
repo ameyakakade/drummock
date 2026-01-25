@@ -1,16 +1,29 @@
 #include "../PluginProcessor.h"
 #include "PluginEditor.h"
 
+
+invisibleButton::invisibleButton() : juce::Button("invisible_button"){
+
+}
+
+
+void invisibleButton::paintButton (juce::Graphics& g, bool isMouseOver, bool isButtonDown){
+    g.setColour (juce::Colours::red);
+    g.setOpacity(0);
+    juce::Rectangle<int> rect(0, 0 ,150, 150);
+    g.fillRect(rect);
+}
+
+
 //==============================================================================
 AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAudioProcessor& p)
     : AudioProcessorEditor (&p), processorRef (p)
 {
-    setResizable(true, true);
+    juce::ignoreUnused (processorRef);
 
     minLength = 1024*4; //minimum length for playhead to be drawn
     decayRate = 0.7f;
     flashes.resize(8);
-    selectedPad = 0;
 
     int x = 80;
     int y = 30;
@@ -21,31 +34,31 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
         if(x > 620){
             y += 180; x = 80;
         }
+        padButtons.emplace_back(std::make_unique<invisibleButton> ());
     }
 
-// 1. Configure the Slider
-    gainSlider.setSliderStyle (juce::Slider::LinearBarVertical);
-    gainSlider.setRange (0.0, 5.0, 0.01); // Min, Max, Step Size
-    gainSlider.setTextBoxStyle (juce::Slider::NoTextBox, false, 90, 0);
-    gain = 0.5;
-    gainSlider.setValue (gain);
+    updateAttachments(0);
+
+    for(int i=0; i<8; i++){
+        addAndMakeVisible(*padButtons[i]);
+        padButtons[i]->onClick = [this, i]{updateAttachments(i);};
+    }
+
+
+
+    gainSlider.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    gainSlider.setRange (0.0, 1.0, 0.01); // Min, Max, Step Size
+    gainSlider.setTextBoxStyle (juce::Slider::NoTextBox, true, 120, 120);
  
-    // 2. Add it to the window (Make it visible)
     addAndMakeVisible (gainSlider);
 
-    // 3. THE CONNECTION (The Magic Wire)
-    // "When the slider moves, update the processor's rawVolume variable"
-    gainSlider.onValueChange = [this] 
-    { 
-        processorRef.raw_vol.store(gainSlider.getValue(), std::memory_order_relaxed); 
-    };
+    pitchSlider.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    pitchSlider.setRange (0.0, 1.0, 0.01); // Min, Max, Step Size
+    pitchSlider.setTextBoxStyle (juce::Slider::NoTextBox, true, 120, 120);
+ 
+    addAndMakeVisible (pitchSlider);
 
-
-    // Make sure that before the constructor has finished, you've set the
-    // editor's size to whatever you need it to be.
     setSize (800, 390);
-    // TRANSLATION: "Set the window width to 400 pixels and height to 300 pixels."
-    //
     startTimerHz(60);
     
     highX = highY = -1;
@@ -82,8 +95,8 @@ void AudioPluginAudioProcessorEditor::paint (juce::Graphics& g)
                 float offset = (float)posi/(float)len*150.0f;
                 if(offset<150){
                     g.setOpacity(1-(offset/300.0));
-                    int x = rects[id].getX();
-                    int y = rects[id].getY();
+                    float x = rects[id].getX();
+                    float y = rects[id].getY();
                     g.drawLine(x + offset, y, x + offset, y + 150, 2);
                 } 
             }
@@ -121,13 +134,15 @@ void AudioPluginAudioProcessorEditor::resized()
     // This is generally where you'll want to lay out the positions of any
     // subcomponents in your editor..
     
-    gainSlider.setBounds (30, 30, 20, getHeight() - 60);
+    gainSlider.setBounds (10, 30, 60, 60);
+    pitchSlider.setBounds (10, 90, 60, 60);
+    for(int i=0; i<8; i++){
+        padButtons[i]->setBounds(rects[i]);
+    }
 }
 
 
 void AudioPluginAudioProcessorEditor::timerCallback(){
-    gainSlider.setValue(gain);
-    gain = std::fmod(gain+0.1, 5);
     repaint();
 }
 
@@ -172,4 +187,17 @@ void AudioPluginAudioProcessorEditor::filesDropped(const juce::StringArray &file
             if(id>=8) break;
         }
     }
+}
+
+
+void AudioPluginAudioProcessorEditor::updateAttachments(int selectedPadIndex){
+    
+    gainAttachment.reset();
+    pitchAttachment.reset();
+
+    selectedPad.store(selectedPadIndex);
+    int i = selectedPad.load();
+
+    gainAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(processorRef.states, "Gain"+std::to_string(i), gainSlider); 
+    pitchAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(processorRef.states, "Pitch"+std::to_string(i), pitchSlider); 
 }
