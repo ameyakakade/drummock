@@ -19,9 +19,10 @@ void voice::startVoice(juce::AudioBuffer<float>& buffer, int padNo, int midiNote
     velocity = vel;
     playRatio = sRate/bufferSRate; 
     age = 0;
+    oldgain = 1;
 }
 
-void voice::renderAudio(juce::AudioBuffer<float>& buffer, int startSample, int endSample, float p){
+void voice::renderAudio(juce::AudioBuffer<float>& buffer, int startSample, int endSample, float p, float gain){
 
     int numBufferChannels = buffer.getNumChannels();
     int noOfSamples = endSample - startSample;
@@ -39,11 +40,14 @@ void voice::renderAudio(juce::AudioBuffer<float>& buffer, int startSample, int e
             if(playHeadNow+1>=numSamples) break;
             int y = int(playHeadNow);
             float f = playHeadNow - y;
-            channelData[i] += (sourceData[y]*(1-f) + sourceData[y+1]*f)*velocity;
+            float lerpedgain = (oldgain*(endSample-i)+gain*(i-startSample))/(endSample-startSample);
+            channelData[i] += (sourceData[y]*(1-f) + sourceData[y+1]*f)*velocity*lerpedgain;
             playHeadNow += playRatioNow;
         }
         
     }
+
+    oldgain = gain;
 
     playHead = playHead + noOfSamples*playRatioNow;
 
@@ -75,12 +79,13 @@ void voiceManager::prepare(int num){
 
 }
 
-void voiceManager::renderAll(juce::AudioBuffer<float>& buffer, int startSample, int endSample, float p){
+void voiceManager::renderAll(juce::AudioBuffer<float>& buffer, int startSample, int endSample, float p, std::vector<std::atomic<float>*> g){
     for(int i=0; i<numVoices; i++){
         auto& voice = voices[i];
         updateState(i, voice->active, -1, -1, (endSample-startSample)*(voice->playRatio)*p, -1);
         if(voice->active){
-            voice->renderAudio(buffer, startSample, endSample, p);
+            float gain = g[voice->padID]->load(std::memory_order_relaxed);
+            voice->renderAudio(buffer, startSample, endSample, p, gain);
         }
     }
 }

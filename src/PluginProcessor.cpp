@@ -220,11 +220,11 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
         }
         if(msg.isNoteOff()){
         }
-        pool.renderAll(buffer, head, time, gpitch);
+        pool.renderAll(buffer, head, time, gpitch, gain);
         head = time;
     }
     float gpitch = globalPitch.load(std::memory_order_relaxed);
-    pool.renderAll(buffer, head, noOfSamples, gpitch);
+    pool.renderAll(buffer, head, noOfSamples, gpitch, gain);
 
 }
 

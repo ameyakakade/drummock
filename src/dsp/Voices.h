@@ -14,12 +14,13 @@ class voice{
         int padID;
         float velocity;
         int age;
+        float oldgain;
 
         juce::AudioBuffer<float>* assignedBuffer;
 
         voice();
         void startVoice(juce::AudioBuffer<float>& buffer, int padNo, int midiNote, float vel, double sRate, double bufferSRate, float st, float end);
-        void renderAudio(juce::AudioBuffer<float>& buffer, int startSample, int endSample, float p);
+        void renderAudio(juce::AudioBuffer<float>& buffer, int startSample, int endSample, float p, float gain);
         void quitVoice();
 };
 
@@ -44,7 +45,7 @@ class voiceManager{
         std::vector<std::unique_ptr<voice>> voices;
         std::vector<std::unique_ptr<voiceData>> states;
         void prepare(int num);
-        void renderAll(juce::AudioBuffer<float>& buffer, int startSample, int endSample, float p);
+        void renderAll(juce::AudioBuffer<float>& buffer, int startSample, int endSample, float p, std::vector<std::atomic<float>*> g);
         void assignVoice(juce::AudioBuffer<float>& buffer, int padNo, int midiNote, float velocity, double sRate, double bufferSRate, float st, float end);
         void updateState(int i, bool state, int length, int pos, int posAdd, int ID);
         void quitByPad(int id);
