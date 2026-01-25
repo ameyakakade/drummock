@@ -140,6 +140,7 @@ void AudioPluginAudioProcessor::changeProgramName (int index, const juce::String
 void AudioPluginAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     currentSampleRate = sampleRate;
+    for(auto& voice : pool.voices) voice->quitVoice();
     // TRANSLATION: "The User just hit Play (or loaded the plugin)."
     // "This is where I reset my math. If I had a Delay line, I would clear the memory here."
 }
