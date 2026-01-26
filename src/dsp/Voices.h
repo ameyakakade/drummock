@@ -3,6 +3,10 @@
 
 class voice{
     public:
+
+        enum class envelope {Attack, Hold, Decay};
+
+        envelope e;
         double playHead;
         bool active;
         int numSamples;
@@ -16,10 +20,16 @@ class voice{
         int age;
         float oldgain;
 
+        double attackTime;
+        double decayTime;
+        double attackFactor;
+        double decayFactor;
+        float startPos;
+
         juce::AudioBuffer<float>* assignedBuffer;
 
         voice();
-        void startVoice(juce::AudioBuffer<float>& buffer, int padNo, int midiNote, float vel, double sRate, double bufferSRate, float st, float end);
+        void startVoice(juce::AudioBuffer<float>& buffer, int padNo, int midiNote, float vel, double sRate, double bufferSRate, float start, float end, float attack, float decay);
         void renderAudio(juce::AudioBuffer<float>& buffer, int startSample, int endSample, float p, float gain);
         void quitVoice();
 };
@@ -46,7 +56,7 @@ class voiceManager{
         std::vector<std::unique_ptr<voiceData>> states;
         void prepare(int num);
         void renderAll(juce::AudioBuffer<float>& buffer, int startSample, int endSample, float p, std::vector<std::atomic<float>*> g);
-        void assignVoice(juce::AudioBuffer<float>& buffer, int padNo, int midiNote, float velocity, double sRate, double bufferSRate, float st, float end);
+        void assignVoice(juce::AudioBuffer<float>& buffer, int padNo, int midiNote, float velocity, double sRate, double bufferSRate, float start, float end, float attack, float decay);
         void updateState(int i, bool state, int length, int pos, int posAdd, int ID);
         void quitByPad(int id);
 };

@@ -8,10 +8,7 @@ invisibleButton::invisibleButton() : juce::Button("invisible_button"){
 
 
 void invisibleButton::paintButton (juce::Graphics& g, bool isMouseOver, bool isButtonDown){
-    g.setColour (juce::Colours::red);
-    g.setOpacity(0);
-    juce::Rectangle<int> rect(0, 0 ,150, 150);
-    g.fillRect(rect);
+
 }
 
 

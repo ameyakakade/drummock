@@ -8,11 +8,12 @@ voice::voice(){
     age = 0;
 }
 
-void voice::startVoice(juce::AudioBuffer<float>& buffer, int padNo, int midiNote, float vel, double sRate, double bufferSRate, float st, float end){
+void voice::startVoice(juce::AudioBuffer<float>& buffer, int padNo, int midiNote, float vel, double sRate, double bufferSRate, float st, float end, float attack, float decay){
     active = true;
     numSamples = buffer.getNumSamples()*end;
     numChannels = buffer.getNumChannels();
-    playHead = st*(buffer.getNumSamples());
+    startPos = st*(buffer.getNumSamples());
+    playHead = startPos;
     assignedBuffer = &buffer;
     setMidiNote = midiNote;
     padID = padNo;
@@ -20,6 +21,10 @@ void voice::startVoice(juce::AudioBuffer<float>& buffer, int padNo, int midiNote
     playRatio = sRate/bufferSRate; 
     age = 0;
     oldgain = 1;
+    attackTime = playHead + (numSamples-startPos)*attack;
+    decayTime = playHead + (numSamples-startPos)*decay;
+    attackFactor = 1/(attackTime-startPos);
+    decayFactor = 1/(numSamples-decayTime);
 }
 
 void voice::renderAudio(juce::AudioBuffer<float>& buffer, int startSample, int endSample, float p, float gain){
@@ -34,21 +39,23 @@ void voice::renderAudio(juce::AudioBuffer<float>& buffer, int startSample, int e
         auto* sourceData = assignedBuffer->getReadPointer(ch);
         auto* channelData = buffer.getWritePointer(ch);
         double playHeadNow = playHead;
-        
 
         for(int i = startSample; i<endSample; i++){
             if(playHeadNow+1>=numSamples) break;
             int y = int(playHeadNow);
             float f = playHeadNow - y;
             float lerpedgain = (oldgain*(endSample-i)+gain*(i-startSample))/(endSample-startSample);
-            channelData[i] += (sourceData[y]*(1-f) + sourceData[y+1]*f)*velocity*lerpedgain;
+            double envelopeGain = 1.0;
+            if(playHeadNow<=attackTime) envelopeGain = (playHeadNow - startPos)*attackFactor;
+            else if(playHeadNow>=decayTime) envelopeGain = std::pow((numSamples - playHeadNow)*decayFactor,2);
+
+            channelData[i] += (sourceData[y]*(1-f) + sourceData[y+1]*f)*velocity*lerpedgain*envelopeGain;
             playHeadNow += playRatioNow;
         }
         
     }
 
     oldgain = gain;
-
     playHead = playHead + noOfSamples*playRatioNow;
 
     if(playHead+1>=numSamples){
@@ -90,21 +97,21 @@ void voiceManager::renderAll(juce::AudioBuffer<float>& buffer, int startSample, 
     }
 }
 
-void voiceManager::assignVoice(juce::AudioBuffer<float>& buffer, int padNo, int midiNote, float velocity, double sRate, double bufferSRate, float st, float end){
+void voiceManager::assignVoice(juce::AudioBuffer<float>& buffer, int padNo, int midiNote, float velocity, double sRate, double bufferSRate, float start, float end, float attack, float decay){
     int oldest = 0;
     bool assigned = false;
     for(int i = 0; i<numVoices; i++){
         if(voices[oldest]->age < voices[i]->age) oldest = i;
         if(!voices[i]->active){
             assigned = true;
-            voices[i]->startVoice(buffer, padNo, midiNote, velocity, sRate, bufferSRate, st, end);
-            updateState(i, true, buffer.getNumSamples(), st*buffer.getNumSamples(), -1, padNo);
+            voices[i]->startVoice(buffer, padNo, midiNote, velocity, sRate, bufferSRate, start, end, attack, decay);
+            updateState(i, true, buffer.getNumSamples(), start*buffer.getNumSamples(), -1, padNo);
             break;
         }
     }
     if(!assigned){
-        voices[oldest]->startVoice(buffer, padNo, midiNote, velocity, sRate, bufferSRate, st, end);
-        updateState(oldest, true, buffer.getNumSamples(), st*buffer.getNumSamples(), -1, padNo);
+        voices[oldest]->startVoice(buffer, padNo, midiNote, velocity, sRate, bufferSRate, start, end, attack, decay);
+        updateState(oldest, true, buffer.getNumSamples(), start*buffer.getNumSamples(), -1, padNo);
     }
 }
 

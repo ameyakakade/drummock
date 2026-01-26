@@ -14,8 +14,8 @@ juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout(){
         group->addChild(std::make_unique<juce::AudioParameterFloat> (juce::ParameterID{"Pitch" + id, 1}, "Pitch " + id, 0.1, 1, 1));
         group->addChild(std::make_unique<juce::AudioParameterFloat> (juce::ParameterID{"Start" + id, 1}, "Start " + id, 0, 1, 0));
         group->addChild(std::make_unique<juce::AudioParameterFloat> (juce::ParameterID{"End" + id, 1}, "End " + id, 0, 1, 1));
-        group->addChild(std::make_unique<juce::AudioParameterFloat> (juce::ParameterID{"Attack" + id, 1}, "Attack " + id, 0.1, 1, 1));
-        group->addChild(std::make_unique<juce::AudioParameterFloat> (juce::ParameterID{"Decay" + id, 1}, "Decay " + id, 0.1, 1, 1));
+        group->addChild(std::make_unique<juce::AudioParameterFloat> (juce::ParameterID{"Attack" + id, 1}, "Attack " + id, 0, 1, 0));
+        group->addChild(std::make_unique<juce::AudioParameterFloat> (juce::ParameterID{"Decay" + id, 1}, "Decay " + id, 0, 1, 1));
         layout.add(std::move(group));
     }
     layout.add(std::make_unique<juce::AudioParameterInt> (juce::ParameterID{"Pitch_Range", 1}, "Pitch Bend Range", 1, 18, 2));
@@ -214,7 +214,7 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
             float pdecay = decay[data->id]->load(std::memory_order_relaxed);
             float v = std::pow(msg.getFloatVelocity(), vsens);
             if(data->file){
-                pool.assignVoice(*data->file, data->id, note, v, data->sampleRate*ppitch, currentSampleRate, pstart, pend);
+                pool.assignVoice(*data->file, data->id, note, v, data->sampleRate*ppitch, currentSampleRate, pstart, pend, pattack, pdecay);
                 padStates[data->id]->store(true, std::memory_order_relaxed);
             }
         }
