@@ -11,7 +11,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout(){
         std::string id = std::to_string(i);
         std::unique_ptr<juce::AudioProcessorParameterGroup> group = std::make_unique<juce::AudioProcessorParameterGroup> (name, name, "and");
         group->addChild(std::make_unique<juce::AudioParameterFloat> (juce::ParameterID{"Gain" + id, 1}, "Gain " + id, 0, 1, 1));
-        group->addChild(std::make_unique<juce::AudioParameterFloat> (juce::ParameterID{"Pitch" + id, 1}, "Pitch " + id, 0.1, 1, 1));
+        group->addChild(std::make_unique<juce::AudioParameterFloat> (juce::ParameterID{"Pitch" + id, 1}, "Pitch " + id, 0.1, 3, 1));
         group->addChild(std::make_unique<juce::AudioParameterFloat> (juce::ParameterID{"Start" + id, 1}, "Start " + id, 0, 1, 0));
         group->addChild(std::make_unique<juce::AudioParameterFloat> (juce::ParameterID{"End" + id, 1}, "End " + id, 0, 1, 1));
         group->addChild(std::make_unique<juce::AudioParameterFloat> (juce::ParameterID{"Attack" + id, 1}, "Attack " + id, 0, 1, 0));
@@ -51,7 +51,7 @@ AudioPluginAudioProcessor::AudioPluginAudioProcessor()
     formatManager.registerBasicFormats();
 
     noOfPads = 8;
-    int noSFT = 32;
+    int noSFT = 128;
 
     samplePool.createPads(noOfPads);
 
