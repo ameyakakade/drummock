@@ -18,6 +18,13 @@ juce_add_plugin(AudioPluginExample
     FORMATS VST3 Standalone                  # The formats to build. Other valid formats are: AAX Unity VST AU AUv3
     PRODUCT_NAME "Audio Plugin Example")        # The name of the final executable, which can differ from the target name
 
+juce_add_binary_data(DrummockAssets
+    SOURCES
+        src/assets/github.svg
+        src/assets/logo.svg
+        # You can add more files here later (fonts, samples, etc.)
+)
+
 target_sources(AudioPluginExample
     PRIVATE
         src/dsp/Voices.cpp
@@ -38,6 +45,8 @@ target_link_libraries(AudioPluginExample
         # AudioPluginData           # If we'd created a binary data target, we'd link to it here
         juce::juce_audio_utils
     PUBLIC
+        DrummockAssets
         juce::juce_recommended_config_flags
         juce::juce_recommended_lto_flags
         juce::juce_recommended_warning_flags)
+

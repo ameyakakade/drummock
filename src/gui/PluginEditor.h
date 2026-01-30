@@ -74,6 +74,7 @@ private:
     juce::TextButton killAll{"PANIC!"};
     juce::ToggleButton monoButton{"MONO"};
     juce::ToggleButton modeButton{"MOD"};
+    invisibleButton github;
     
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> gainAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> pitchAttachment;
@@ -100,12 +101,16 @@ private:
     void setMode(int mode);
 
     juce::Image waveformCache;
+    std::unique_ptr<juce::Drawable> githubSvg;
+    std::unique_ptr<juce::Drawable> logoSvg;
     void updateWaveformCache();
 
     int minLength;
     float decayRate;
 
     float radius;
+    double scale;
+    int cursor;
 
     int highX;
     int highY;

@@ -1,23 +1,37 @@
 #include "../PluginProcessor.h"
 #include "PluginEditor.h"
+#include "BinaryData.h"
 
 namespace Style {
-    const auto mainBackground      = juce::Colour(0xff0f111a); 
-    const auto thumbBackground     = juce::Colour(0xff1a1c25); 
-    const auto accentColor         = juce::Colour(0xff45deed); 
-    const auto thumbColor1         = juce::Colour(0xff7386d5);
-    const auto thumbColor2         = juce::Colour(0xff91a6ff);
-    const auto thumbOverlayColor   = juce::Colour(0xff2d3142);
-    const auto playHeadColor       = juce::Colour(0xffff5f7e);
-    const auto flashColor          = juce::Colour(0xffffd166);
-    const auto knobTextColor       = juce::Colour(0xffbfc7d5);
-    const auto knobTextColorActive = juce::Colour(0xff45deed);
-    const auto knobMain            = juce::Colour(0xff717cb4);
-    const auto knobMainBi          = juce::Colour(0xff4b5263);
-    const auto transparent         = juce::Colour(0x00000000);
-    const auto killAllButton       = juce::Colour(0xffef476f);
-    const auto killAllButtonOn     = juce::Colour(0xffef476f);
-    const auto errorText           = juce::Colour(0xffff0000);
+    // Backgrounds & Surfaces
+    const auto mainBackground       = juce::Colour(0xff0f111a); 
+    const auto bannerBackground     = juce::Colour(0xff161925);
+    const auto logoBackgroundActive = juce::Colour(0xff2a2e3f);
+    const auto thumbBackground      = juce::Colour(0xff171923); 
+    const auto thumbOverlayColor    = juce::Colour(0xff202333);
+
+    // Brand & Interaction
+    const auto accentColor          = juce::Colour(0xff9df9d3);
+    const auto thumbColor1          = juce::Colour(0xff7386d5);
+    const auto thumbColor2          = juce::Colour(0xff61afef);
+    
+    // Playhead & Feedback
+    const auto playHeadColor        = juce::Colour(0xffff5f7e);
+    const auto flashColor           = juce::Colour(0xffffd166);
+    const auto errorText            = juce::Colour(0xfff07178);
+
+    // Knobs & Labels
+    const auto knobTextColor        = juce::Colour(0xffbfc7d5);
+    const auto knobTextColorActive  = juce::Colour(0xff45deed);
+    const auto knobMain             = juce::Colour(0xffb7c3ff);
+    const auto knobMainBi           = juce::Colour(0xffcfb7ff);
+
+    // Buttons
+    const auto killAllButton        = juce::Colour(0xff5c202e);
+    const auto killAllButtonOn      = juce::Colour(0xffef476f);
+
+    // Utilities
+    const auto transparent          = juce::Colour(0x00000000);
 }
 
 invisibleButton::invisibleButton() : juce::Button("invisible_button"){
@@ -34,7 +48,7 @@ void knobLookAndFeel::drawRotarySlider(juce::Graphics& g, int x, int y, int widt
     auto pi = juce::MathConstants<float>::pi;
     auto twoPi = juce::MathConstants<float>::twoPi; // Very useful for circles
 
-    float border_width = slider.isMouseOverOrDragging() ? 8.0 : 3.0;
+    float border_width = slider.isMouseOverOrDragging() ? 8.0 : 5.0;
     int diameter = std::min(width, height) - border_width*2;
     int middleX = width/2;
     int middleY = height/2;
@@ -60,7 +74,7 @@ void knobLookAndFeel::drawRotarySlider(juce::Graphics& g, int x, int y, int widt
 
     slider.isMouseOverOrDragging() ? g.setColour(Style::knobTextColorActive) : g.setColour(Style::knobTextColor);    
 
-    // g.setFont(); 
+    g.setFont(15.0f); 
     
     juce::String value(slider.getValue(), 2, false);
 
@@ -78,10 +92,15 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
     decayRate = 0.7f;
     flashes.resize(8);
 
+    cursor = 0;
+    
+    githubSvg = juce::Drawable::createFromImageData(BinaryData::github_svg, BinaryData::github_svgSize);
+    logoSvg = juce::Drawable::createFromImageData(BinaryData::logo_svg, BinaryData::logo_svgSize);
+
     radius = 10.0;
 
     int x = 30;
-    int y = 30;
+    int y = 60;
     for(int i=0; i<8; i++){
         juce::Rectangle<int> rect(x, y ,150, 150);
         rects.push_back(rect);
@@ -139,6 +158,7 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
     addAndMakeVisible (killAll);
     addAndMakeVisible (monoButton);
     addAndMakeVisible (modeButton);
+    addAndMakeVisible (github);
 
     killAll.setColour(juce::TextButton::buttonColourId, Style::killAllButton);
     killAll.setColour(juce::TextButton::buttonOnColourId, Style::killAllButtonOn);
@@ -178,7 +198,11 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
         setMode(m);
     };
 
-    setSize (750, 570);
+    github.onClick = []{
+        juce::URL("https://github.com/ameyakakade/drummock").launchInDefaultBrowser();
+    };
+
+    setSize (750, 600);
     startTimerHz(60);
     
     highX = highY = -1;
@@ -192,12 +216,16 @@ AudioPluginAudioProcessorEditor::~AudioPluginAudioProcessorEditor()
 }
 
 void AudioPluginAudioProcessorEditor::updateWaveformCache(){
-    
-    waveformCache = juce::Image(juce::Image::ARGB, getWidth()*2, getHeight()*2, true);
+
+    waveformCache = juce::Image(juce::Image::ARGB, getWidth()*scale, getHeight()*scale, true);
 
     juce::Graphics g(waveformCache);
 
-    g.addTransform(juce::AffineTransform::scale(2));
+    g.addTransform(juce::AffineTransform::scale(scale));
+
+    g.setColour(Style::bannerBackground);
+    g.fillRect(0, 0, getWidth(), 40);
+
 
     for(int i=0; i<8; i++){
         g.saveState();
@@ -253,6 +281,7 @@ void AudioPluginAudioProcessorEditor::updateWaveformCache(){
 void AudioPluginAudioProcessorEditor::paint (juce::Graphics& g)
 {
 
+    scale = g.getInternalContext().getPhysicalPixelScaleFactor();
 
     g.fillAll (Style::mainBackground);
 
@@ -261,6 +290,7 @@ void AudioPluginAudioProcessorEditor::paint (juce::Graphics& g)
                           juce::RectanglePlacement::fillDestination);
     else
         updateWaveformCache(); // Safety fallback
+
 
     for(int t=0; t<30; t++){
         g.saveState();
@@ -316,6 +346,13 @@ void AudioPluginAudioProcessorEditor::paint (juce::Graphics& g)
     g.drawRoundedRectangle(rects[selectedPad.load(std::memory_order_relaxed)].toFloat(), radius, 2.0);
 
     g.setOpacity(1);
+    g.setColour(Style::logoBackgroundActive);
+
+    if(cursor==1) g.fillRect(getWidth()-40, 0, 40, 40);
+
+    githubSvg->drawWithin(g, juce::Rectangle<float>(getWidth()-35, 5, 30, 30), juce::RectanglePlacement::centred, true);
+    logoSvg->drawWithin(g, juce::Rectangle<float>(5, 0, 280, 40), juce::RectanglePlacement::xLeft, true);
+
 }
 
 void AudioPluginAudioProcessorEditor::resized()
@@ -323,44 +360,45 @@ void AudioPluginAudioProcessorEditor::resized()
 {
     // This is generally where you'll want to lay out the positions of any
     // subcomponents in your editor..
-    gainSlider.setBounds(75, 400, 90, 110);
-    pitchSlider.setBounds(175, 400, 90, 110);
-    startSlider.setBounds(275, 400, 90, 110);
-    endSlider.setBounds(375, 400, 90, 110);
-    attackSlider.setBounds(475, 400, 90, 110);
-    decaySlider.setBounds(575, 400, 90, 110);
+    gainSlider.setBounds(75, 430, 90, 110);
+    pitchSlider.setBounds(175, 430, 90, 110);
+    startSlider.setBounds(275, 430, 90, 110);
+    endSlider.setBounds(375, 430, 90, 110);
+    attackSlider.setBounds(475, 430, 90, 110);
+    decaySlider.setBounds(575, 430, 90, 110);
 
-    gainLabel.setBounds(75,380,90,20);
-    pitchLabel.setBounds(175,380,90,20);
-    startLabel.setBounds(275,380,90,20);
-    endLabel.setBounds(375,380,90,20);
-    attackLabel.setBounds(475,380,90,20);
-    decayLabel.setBounds(575,380,90,20);
+    gainLabel.setBounds(75,410,90,20);
+    pitchLabel.setBounds(175,410,90,20);
+    startLabel.setBounds(275,410,90,20);
+    endLabel.setBounds(375,410,90,20);
+    attackLabel.setBounds(475,410,90,20);
+    decayLabel.setBounds(575,410,90,20);
 
-    velocityModLabel.setBounds(50, 370, 410, 30);
-    rndModLabel.setBounds(395, 370, 410, 30);
+    velocityModLabel.setBounds(50, 400, 410, 30);
+    rndModLabel.setBounds(395, 400, 410, 30);
 
-    gainModSlider.setBounds(50, 430, 70, 70);
-    pitchModSlider.setBounds(135, 430, 70, 70);
-    startModSlider.setBounds(220, 430, 70, 70);
-    attackModSlider.setBounds(305, 430, 70, 70);
-    decayModSlider.setBounds(390, 430, 70, 70);
+    gainModSlider.setBounds(50, 460, 70, 70);
+    pitchModSlider.setBounds(135, 460, 70, 70);
+    startModSlider.setBounds(220, 460, 70, 70);
+    attackModSlider.setBounds(305, 460, 70, 70);
+    decayModSlider.setBounds(390, 460, 70, 70);
 
-    gainModLabel.setBounds(50,405,70,20);
-    pitchModLabel.setBounds(135,405,70,20);
-    startModLabel.setBounds(220,405,70,20);
-    attackModLabel.setBounds(305,405,70,20);
-    decayModLabel.setBounds(390,405,70,20);
+    gainModLabel.setBounds(50,435,70,20);
+    pitchModLabel.setBounds(135,435,70,20);
+    startModLabel.setBounds(220,435,70,20);
+    attackModLabel.setBounds(305,435,70,20);
+    decayModLabel.setBounds(390,435,70,20);
 
-    gainRndLabel.setBounds(525,405,70,20);
-    pitchRndLabel.setBounds(610,405,70,20);
+    gainRndLabel.setBounds(525,435,70,20);
+    pitchRndLabel.setBounds(610,435,70,20);
 
-    gainRndSlider.setBounds(525, 430, 70, 70);
-    pitchRndSlider.setBounds(610, 430, 70, 70);
+    gainRndSlider.setBounds(525, 460, 70, 70);
+    pitchRndSlider.setBounds(610, 460, 70, 70);
 
-    killAll.setBounds(250, 510, 70, 40);
-    monoButton.setBounds(350, 510, 70, 40);
-    modeButton.setBounds(450, 510, 70, 40);
+    killAll.setBounds(250, 540, 70, 40);
+    monoButton.setBounds(350, 540, 70, 40);
+    modeButton.setBounds(450, 540, 70, 40);
+    github.setBounds(getWidth()-40, 0, 40, 40);
 
     setMode(0);
     
@@ -374,12 +412,12 @@ void AudioPluginAudioProcessorEditor::timerCallback(){
     if(counter>=60){
         counter = 0;
         updateWaveformCache();
-        for(int i=0; i<8; i++){
-            int j = processorRef.fileStates[i]->load(std::memory_order_relaxed);
-            DBG(j);
-        }
     }
     counter += 1;
+
+    if(github.isOver()) cursor = 1;
+    else cursor = 0;
+
     repaint();
 }
 
