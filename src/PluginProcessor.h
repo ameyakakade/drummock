@@ -91,8 +91,8 @@ public:
     std::vector<std::atomic<float>*> pitchrnd;
 
     std::atomic<float>* pbrange;
-    std::atomic<float>* velocitySen;
     std::atomic<float> globalPitch;
+    std::atomic<float>* clip;
 
     void fillPointerArray(std::vector<std::atomic<float>*>& arr, std::string idtag, int idrange);
     void fillPointerArray(std::vector<std::atomic<bool>*>& arr, std::string idtag, int idrange);

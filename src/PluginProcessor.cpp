@@ -6,11 +6,13 @@
 //helper fn to create parameters
 juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout(){
     juce::AudioProcessorValueTreeState::ParameterLayout layout;
+    juce::NormalisableRange<float> volumeRange(0.0f, 3.0f);
+    volumeRange.setSkewForCentre(0.9f);
     for(int i=0; i<8; i++){
         juce::String name = "Pad" + std::to_string(i);
         std::string id = std::to_string(i);
         std::unique_ptr<juce::AudioProcessorParameterGroup> group = std::make_unique<juce::AudioProcessorParameterGroup> (name, name, "and");
-        group->addChild(std::make_unique<juce::AudioParameterFloat> (juce::ParameterID{"Gain" + id, 1}, "Gain " + id, 0, 1.2, 0.8));
+        group->addChild(std::make_unique<juce::AudioParameterFloat> (juce::ParameterID{"Gain" + id, 1}, "Gain " + id, volumeRange, 0.9));
         group->addChild(std::make_unique<juce::AudioParameterFloat> (juce::ParameterID{"Pan" + id, 1}, "Pan " + id, -1, 1, 0));
         group->addChild(std::make_unique<juce::AudioParameterFloat> (juce::ParameterID{"Pitch" + id, 1}, "Pitch " + id, 0.1, 3, 1));
         group->addChild(std::make_unique<juce::AudioParameterFloat> (juce::ParameterID{"Start" + id, 1}, "Start " + id, 0, 1, 0));
@@ -26,6 +28,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout(){
         layout.add(std::move(group));
     }
     layout.add(std::make_unique<juce::AudioParameterInt> (juce::ParameterID{"Pitch_Range", 1}, "Pitch Bend Range", 1, 18, 2));
+    layout.add(std::make_unique<juce::AudioParameterBool> (juce::ParameterID{"Clip", 1}, "Clip Output", true));
     return layout;     
 }
 
@@ -90,6 +93,7 @@ AudioPluginAudioProcessor::AudioPluginAudioProcessor()
 
     pbrange = states.getRawParameterValue("Pitch_Range");
     globalPitch.store(1, std::memory_order_relaxed);
+    clip = states.getRawParameterValue("Clip");
 }
 
 AudioPluginAudioProcessor::~AudioPluginAudioProcessor()
@@ -159,6 +163,9 @@ void AudioPluginAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
 {
     currentSampleRate = sampleRate;
     for(auto& voice : pool.voices) voice->quitVoice();
+
+    float dummy = std::pow(0.5f, 2.0f); 
+    juce::ignoreUnused(dummy);
     // TRANSLATION: "The User just hit Play (or loaded the plugin)."
     // "This is where I reset my math. If I had a Delay line, I would clear the memory here."
 }
@@ -255,6 +262,8 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     }
     float gpitch = globalPitch.load(std::memory_order_relaxed);
     pool.renderAll(buffer, head, noOfSamples, gpitch, gain, pan);
+
+    if(clip->load(std::memory_order_relaxed)) distortFn(buffer);
 
 }
 

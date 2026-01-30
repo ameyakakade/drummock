@@ -80,13 +80,13 @@ void knobLookAndFeel::drawRotarySlider(juce::Graphics& g, int x, int y, int widt
 
     g.drawText(value, x, y, width, height, juce::Justification::centred, false);
 
+
 }
 
 //==============================================================================
 AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAudioProcessor& p)
     : AudioProcessorEditor (&p), processorRef (p)
 {
-    juce::ignoreUnused (processorRef);
 
     minLength = 1024*4; //minimum length for playhead to be drawn
     decayRate = 0.7f;
@@ -111,14 +111,14 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
         padButtons.emplace_back(std::make_unique<invisibleButton> ());
     }
 
-    updateAttachments(0);
-
     for(int i=0; i<8; i++){
         addAndMakeVisible(*padButtons[i]);
         padButtons[i]->onClick = [this, i]{updateAttachments(i);};
     }
 
-    changeSliders(gainSlider, 0.0, 1.0);
+    updateAttachments(0);
+
+    changeSliders(gainSlider, 0.0, 2.0);
     changeSliders(panSlider, -1.0, 1.0);
     changeSliders(pitchSlider, 0.0, 3.0);
     changeSliders(startSlider, 0.0, 1.0);
@@ -135,7 +135,7 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
 
     changeLabels(gainLabel, "Volume");
     changeLabels(panLabel, "Pan");
-    changeLabels(pitchLabel, "Rate");
+    changeLabels(pitchLabel, "Pitch");
     changeLabels(startLabel, "Start");
     changeLabels(endLabel, "End");
     changeLabels(attackLabel, "Attack");
@@ -151,11 +151,12 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
 
     changeLabels(gainRndLabel, "Volume");
     changeLabels(panRndLabel, "Pan");
-    changeLabels(pitchRndLabel, "Rate");
+    changeLabels(pitchRndLabel, "Pitch");
 
     addAndMakeVisible (killAll);
     addAndMakeVisible (monoButton);
     addAndMakeVisible (modeButton);
+    addAndMakeVisible (clipButton);
     addAndMakeVisible (github);
 
     killAll.setColour(juce::TextButton::buttonColourId, Style::killAllButton);
@@ -196,6 +197,8 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
         setMode(m);
     };
 
+    clipAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(processorRef.states, "Clip", clipButton); 
+
     github.onClick = []{
         juce::URL("https://github.com/ameyakakade/drummock").launchInDefaultBrowser();
     };
@@ -205,6 +208,8 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
     
     highX = highY = -1;
     counter = 0;
+    
+    updateAttachments(0);
 
 }
 
@@ -393,7 +398,8 @@ void AudioPluginAudioProcessorEditor::resized()
 
     killAll.setBounds(345, 540, 70, 40);
     monoButton.setBounds(250, 540, 70, 40);
-    modeButton.setBounds(450, 540, 70, 40);
+    modeButton.setBounds(440, 540, 70, 40);
+    clipButton.setBounds(520, 540, 70, 40);
     github.setBounds(getWidth()-40, 0, 40, 40);
 
     setMode(0);
@@ -500,12 +506,12 @@ void AudioPluginAudioProcessorEditor::updateAttachments(int selectedPadIndex){
     gainRndAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(processorRef.states, "VolumeRnd"+std::to_string(i), gainRndSlider); 
     panRndAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(processorRef.states, "PanRnd"+std::to_string(i), panRndSlider); 
     pitchRndAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(processorRef.states, "PitchRnd"+std::to_string(i), pitchRndSlider); 
+
 }
 
 
 void AudioPluginAudioProcessorEditor::changeSliders(juce::Slider& slider, double start, double end){
     slider.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
-    slider.setRange (start, end, 0.01); // Min, Max, Step Size
     slider.setTextBoxStyle (juce::Slider::NoTextBox, true, 0, 0);
     slider.setColour(juce::Slider::textBoxOutlineColourId, Style::transparent);
     slider.setLookAndFeel(&style);

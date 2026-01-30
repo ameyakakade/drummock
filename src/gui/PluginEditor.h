@@ -72,6 +72,7 @@ private:
     juce::TextButton killAll{"PANIC!"};
     juce::ToggleButton monoButton{"MONO"};
     juce::ToggleButton modeButton{"MOD"};
+    juce::ToggleButton clipButton{"CLIP"};
     invisibleButton github;
     
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> gainAttachment;
@@ -90,6 +91,7 @@ private:
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> pitchRndAttachment;
 
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> monoAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> clipAttachment;
 
     void changeSliders(juce::Slider& slider, double start, double end);
     void changeLabels(juce::Label& label, juce::String text);
