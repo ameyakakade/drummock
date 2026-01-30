@@ -24,6 +24,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout(){
         group->addChild(std::make_unique<juce::AudioParameterFloat> (juce::ParameterID{"DecayMod" + id, 1}, "Decay Mod" + id, -1, 1, 0));
         group->addChild(std::make_unique<juce::AudioParameterFloat> (juce::ParameterID{"StartMod" + id, 1}, "Start Mod " + id, -1, 1, 0));
         group->addChild(std::make_unique<juce::AudioParameterFloat> (juce::ParameterID{"VolumeRnd" + id, 1}, "Volume Randomize " + id, 0, 1, 0));
+        group->addChild(std::make_unique<juce::AudioParameterFloat> (juce::ParameterID{"PanRnd" + id, 1}, "Pan Randomize " + id, 0, 1, 0));
         group->addChild(std::make_unique<juce::AudioParameterFloat> (juce::ParameterID{"PitchRnd" + id, 1}, "Pitch Randomize " + id, 0, 1, 0));
         layout.add(std::move(group));
     }
@@ -88,6 +89,7 @@ AudioPluginAudioProcessor::AudioPluginAudioProcessor()
     fillPointerArray(decaymod, "DecayMod", 8);
 
     fillPointerArray(gainrnd, "VolumeRnd", 8);
+    fillPointerArray(gainrnd, "PanRnd", 8);
     fillPointerArray(pitchrnd, "PitchRnd", 8);
 
     pbrange = states.getRawParameterValue("Pitch_Range");

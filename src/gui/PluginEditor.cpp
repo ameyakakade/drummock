@@ -118,7 +118,8 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
         padButtons[i]->onClick = [this, i]{updateAttachments(i);};
     }
 
-    changeSliders(gainSlider, 0.0, 1.2);
+    changeSliders(gainSlider, 0.0, 1.0);
+    changeSliders(panSlider, -1.0, 1.0);
     changeSliders(pitchSlider, 0.0, 3.0);
     changeSliders(startSlider, 0.0, 1.0);
     changeSliders(endSlider, 0.0, 1.0);
@@ -132,10 +133,12 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
     changeSliders(decayModSlider, -1.0, 1.0);
 
     changeSliders(gainRndSlider, 0.0, 1.0);
+    changeSliders(panRndSlider, 0.0, 1.0);
     changeSliders(pitchRndSlider, 0.0, 1.0);
 
     changeLabels(gainLabel, "Volume");
-    changeLabels(pitchLabel, "Pitch");
+    changeLabels(panLabel, "Pan");
+    changeLabels(pitchLabel, "Rate");
     changeLabels(startLabel, "Start");
     changeLabels(endLabel, "End");
     changeLabels(attackLabel, "Attack");
@@ -147,13 +150,14 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
     rndModLabel.setFont(juce::FontOptions(18.0f));
 
     changeLabels(gainModLabel, "Volume");
-    changeLabels(pitchModLabel, "Pitch");
+    changeLabels(pitchModLabel, "Rate");
     changeLabels(startModLabel, "Start");
     changeLabels(attackModLabel, "Attack");
     changeLabels(decayModLabel, "Decay");
 
     changeLabels(gainRndLabel, "Volume");
-    changeLabels(pitchRndLabel, "Pitch");
+    changeLabels(panRndLabel, "Pan");
+    changeLabels(pitchRndLabel, "Rate");
 
     addAndMakeVisible (killAll);
     addAndMakeVisible (monoButton);
@@ -360,40 +364,44 @@ void AudioPluginAudioProcessorEditor::resized()
 {
     // This is generally where you'll want to lay out the positions of any
     // subcomponents in your editor..
-    gainSlider.setBounds(75, 430, 90, 110);
-    pitchSlider.setBounds(175, 430, 90, 110);
-    startSlider.setBounds(275, 430, 90, 110);
-    endSlider.setBounds(375, 430, 90, 110);
-    attackSlider.setBounds(475, 430, 90, 110);
-    decaySlider.setBounds(575, 430, 90, 110);
+    gainSlider.setBounds(32, 435, 90, 110);
+    panSlider.setBounds(132, 435, 90, 110);
+    pitchSlider.setBounds(232, 435, 90, 110);
+    startSlider.setBounds(332, 435, 90, 110);
+    endSlider.setBounds(432, 435, 90, 110);
+    attackSlider.setBounds(532, 435, 90, 110);
+    decaySlider.setBounds(632, 435, 90, 110);
 
-    gainLabel.setBounds(75,410,90,20);
-    pitchLabel.setBounds(175,410,90,20);
-    startLabel.setBounds(275,410,90,20);
-    endLabel.setBounds(375,410,90,20);
-    attackLabel.setBounds(475,410,90,20);
-    decayLabel.setBounds(575,410,90,20);
+    gainLabel.setBounds(32, 410, 90, 20);
+    panLabel.setBounds(132, 410, 90, 20);
+    pitchLabel.setBounds(232, 410, 90, 20);
+    startLabel.setBounds(332, 410, 90, 20);
+    endLabel.setBounds(432, 410, 90, 20);
+    attackLabel.setBounds(532, 410, 90, 20);
+    decayLabel.setBounds(632, 410, 90, 20);
 
-    velocityModLabel.setBounds(50, 400, 410, 30);
+    velocityModLabel.setBounds(40, 400, 410, 30);
     rndModLabel.setBounds(395, 400, 410, 30);
 
-    gainModSlider.setBounds(50, 460, 70, 70);
-    pitchModSlider.setBounds(135, 460, 70, 70);
-    startModSlider.setBounds(220, 460, 70, 70);
-    attackModSlider.setBounds(305, 460, 70, 70);
-    decayModSlider.setBounds(390, 460, 70, 70);
+    gainModSlider.setBounds(40, 460, 70, 70);
+    pitchModSlider.setBounds(125, 460, 70, 70);
+    startModSlider.setBounds(210, 460, 70, 70);
+    attackModSlider.setBounds(295, 460, 70, 70);
+    decayModSlider.setBounds(380, 460, 70, 70);
 
-    gainModLabel.setBounds(50,435,70,20);
-    pitchModLabel.setBounds(135,435,70,20);
-    startModLabel.setBounds(220,435,70,20);
-    attackModLabel.setBounds(305,435,70,20);
-    decayModLabel.setBounds(390,435,70,20);
+    gainModLabel.setBounds(40,435,70,20);
+    pitchModLabel.setBounds(125,435,70,20);
+    startModLabel.setBounds(210,435,70,20);
+    attackModLabel.setBounds(295,435,70,20);
+    decayModLabel.setBounds(380,435,70,20);
 
-    gainRndLabel.setBounds(525,435,70,20);
-    pitchRndLabel.setBounds(610,435,70,20);
+    gainRndLabel.setBounds(490, 435, 60, 20);
+    panRndLabel.setBounds(570, 435, 60, 20);
+    pitchRndLabel.setBounds(650, 435, 60, 20);
 
-    gainRndSlider.setBounds(525, 460, 70, 70);
-    pitchRndSlider.setBounds(610, 460, 70, 70);
+    gainRndSlider.setBounds(485, 460, 70, 70);
+    panRndSlider.setBounds(565, 460, 70, 70);
+    pitchRndSlider.setBounds(645, 460, 70, 70);
 
     killAll.setBounds(250, 540, 70, 40);
     monoButton.setBounds(350, 540, 70, 40);
@@ -469,6 +477,7 @@ void AudioPluginAudioProcessorEditor::filesDropped(const juce::StringArray &file
 void AudioPluginAudioProcessorEditor::updateAttachments(int selectedPadIndex){
     
     gainAttachment.reset();
+    panAttachment.reset();
     pitchAttachment.reset();
     startAttachment.reset();
     endAttachment.reset();
@@ -481,12 +490,17 @@ void AudioPluginAudioProcessorEditor::updateAttachments(int selectedPadIndex){
     attackModAttachment.reset();
     decayModAttachment.reset();
 
+    gainRndAttachment.reset();
+    panRndAttachment.reset();
+    pitchRndAttachment.reset();
+
     monoAttachment.reset();
 
     selectedPad.store(selectedPadIndex);
     int i = selectedPad.load();
 
     gainAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(processorRef.states, "Gain"+std::to_string(i), gainSlider); 
+    panAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(processorRef.states, "Pan"+std::to_string(i), panSlider); 
     pitchAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(processorRef.states, "Pitch"+std::to_string(i), pitchSlider); 
     startAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(processorRef.states, "Start"+std::to_string(i), startSlider); 
     endAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(processorRef.states, "End"+std::to_string(i), endSlider); 
@@ -502,6 +516,7 @@ void AudioPluginAudioProcessorEditor::updateAttachments(int selectedPadIndex){
     decayModAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(processorRef.states, "DecayMod"+std::to_string(i), decayModSlider); 
 
     gainRndAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(processorRef.states, "VolumeRnd"+std::to_string(i), gainRndSlider); 
+    panRndAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(processorRef.states, "PanRnd"+std::to_string(i), panRndSlider); 
     pitchRndAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(processorRef.states, "PitchRnd"+std::to_string(i), pitchRndSlider); 
 }
 
@@ -523,6 +538,7 @@ void AudioPluginAudioProcessorEditor::changeLabels(juce::Label& label, juce::Str
 
 void AudioPluginAudioProcessorEditor::setMode(int mode){
     gainSlider.setVisible(1-mode);
+    panSlider.setVisible(1-mode);
     pitchSlider.setVisible(1-mode);
     startSlider.setVisible(1-mode);
     attackSlider.setVisible(1-mode);
@@ -530,6 +546,7 @@ void AudioPluginAudioProcessorEditor::setMode(int mode){
     endSlider.setVisible(1-mode);
 
     gainLabel.setVisible(1-mode);
+    panLabel.setVisible(1-mode);
     pitchLabel.setVisible(1-mode);
     startLabel.setVisible(1-mode);
     endLabel.setVisible(1-mode);
@@ -543,6 +560,7 @@ void AudioPluginAudioProcessorEditor::setMode(int mode){
     decayModSlider.setVisible(mode);
 
     gainRndSlider.setVisible(mode);
+    panRndSlider.setVisible(mode);
     pitchRndSlider.setVisible(mode);
 
     gainModLabel.setVisible(mode);
@@ -555,5 +573,6 @@ void AudioPluginAudioProcessorEditor::setMode(int mode){
     rndModLabel.setVisible(mode);
 
     gainRndLabel.setVisible(mode);
+    panRndLabel.setVisible(mode);
     pitchRndLabel.setVisible(mode);
 }

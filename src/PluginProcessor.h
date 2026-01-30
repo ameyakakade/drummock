@@ -89,6 +89,7 @@ public:
     std::vector<std::atomic<float>*> decaymod;
 
     std::vector<std::atomic<float>*> gainrnd;
+    std::vector<std::atomic<float>*> panrnd;
     std::vector<std::atomic<float>*> pitchrnd;
 
     std::atomic<float>* pbrange;

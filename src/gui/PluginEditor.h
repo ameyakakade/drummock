@@ -37,6 +37,7 @@ private:
     knobLookAndFeel style;
 
     juce::Slider gainSlider; 
+    juce::Slider panSlider; 
     juce::Slider pitchSlider; 
     juce::Slider startSlider; 
     juce::Slider endSlider; 
@@ -50,9 +51,11 @@ private:
     juce::Slider decayModSlider; 
 
     juce::Slider gainRndSlider; 
+    juce::Slider panRndSlider; 
     juce::Slider pitchRndSlider; 
 
     juce::Label gainLabel;
+    juce::Label panLabel;
     juce::Label pitchLabel;
     juce::Label startLabel;
     juce::Label endLabel;
@@ -63,6 +66,7 @@ private:
     juce::Label rndModLabel;
 
     juce::Label gainRndLabel;
+    juce::Label panRndLabel;
     juce::Label pitchRndLabel;
 
     juce::Label gainModLabel;
@@ -77,6 +81,7 @@ private:
     invisibleButton github;
     
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> gainAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> panAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> pitchAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> startAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> endAttachment;
@@ -90,6 +95,7 @@ private:
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> decayModAttachment;
 
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> gainRndAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> panRndAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> pitchRndAttachment;
 
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> monoAttachment;
