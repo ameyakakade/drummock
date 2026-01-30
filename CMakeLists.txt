@@ -12,12 +12,12 @@ juce_add_plugin(AudioPluginExample
     IS_MIDI_EFFECT FALSE                        # Is this plugin a MIDI effect?
     # EDITOR_WANTS_KEYBOARD_FOCUS TRUE/FALSE    # Does the editor need keyboard focus?
     # COPY_PLUGIN_AFTER_BUILD TRUE/FALSE        # Should the plugin be installed to a default location after building?
-    PLUGIN_MANUFACTURER_CODE Daft               # A four-character manufacturer id with at least one upper-case character
-    PLUGIN_CODE Daft                            # A unique four-character plugin id with exactly one upper-case character
+    PLUGIN_MANUFACTURER_CODE AmKa               # A four-character manufacturer id with at least one upper-case character
+    PLUGIN_CODE Drmk                            # A unique four-character plugin id with exactly one upper-case character
                                                 # GarageBand 10.3 requires the first letter to be upper-case, and the remaining letters to be lower-case
                                                 
     FORMATS VST3 Standalone AU                # The formats to build. Other valid formats are: AAX Unity VST AU AUv3
-    PRODUCT_NAME "drummock")                  # The name of the final executable, which can differ from the target name
+    PRODUCT_NAME "Drummock")                  # The name of the final executable, which can differ from the target name
 
 juce_add_binary_data(DrummockAssets
     SOURCES
