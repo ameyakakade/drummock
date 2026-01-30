@@ -1,0 +1,43 @@
+name: Build JUCE Plugin
+
+on: [push]
+
+jobs:
+  build_windows:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        submodules: true # Important if you use JUCE as submodule
+    - name: Setup MSVC
+      uses: ilammy/msvc-dev-cmd@v1
+    - name: Configure CMake
+      run: cmake -B build
+    - name: Build
+      run: cmake --build build --config Release
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: Windows-VST3
+        path: build/your_plugin_artifacts/Release/VST3/*.vst3
+
+  build_linux:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        submodules: true
+    - name: Install Dependencies
+      # JUCE needs these specific libs on Linux
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libasound2-dev libx11-dev libxinerama-dev libxext-dev libfreetype6-dev libwebkit2gtk-4.0-dev libglu1-mesa-dev
+    - name: Configure CMake
+      run: cmake -B build -DCMAKE_BUILD_TYPE=Release
+    - name: Build
+      run: cmake --build build --config Release
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: Linux-VST3
+        path: build/your_plugin_artifacts/Release/VST3/*.vst3
