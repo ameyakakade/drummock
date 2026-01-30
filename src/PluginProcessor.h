@@ -73,6 +73,7 @@ public:
     std::vector<std::unique_ptr<std::atomic<int>>> fileStates;
 
     std::vector<std::atomic<float>*> gain;
+    std::vector<std::atomic<float>*> pan;
     std::vector<std::atomic<float>*> pitch;
     std::vector<std::atomic<float>*> start;
     std::vector<std::atomic<float>*> end;

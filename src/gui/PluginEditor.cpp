@@ -118,7 +118,7 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
         padButtons[i]->onClick = [this, i]{updateAttachments(i);};
     }
 
-    changeSliders(gainSlider, 0.0, 1.0);
+    changeSliders(gainSlider, 0.0, 1.2);
     changeSliders(pitchSlider, 0.0, 3.0);
     changeSliders(startSlider, 0.0, 1.0);
     changeSliders(endSlider, 0.0, 1.0);
