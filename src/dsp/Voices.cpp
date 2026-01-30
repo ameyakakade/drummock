@@ -8,7 +8,7 @@ voice::voice(){
     age = 0;
 }
 
-void voice::startVoice(juce::AudioBuffer<float>& buffer, int padNo, int midiNote, float vel, double sRate, double bufferSRate, float st, float end, float attack, float decay){
+void voice::startVoice(juce::AudioBuffer<float>& buffer, int padNo, int midiNote, float vel, double sRate, double bufferSRate, float st, float end, float attack, float decay, float pan){
     active = true;
     numSamples = buffer.getNumSamples()*end;
     numChannels = buffer.getNumChannels();
@@ -18,6 +18,7 @@ void voice::startVoice(juce::AudioBuffer<float>& buffer, int padNo, int midiNote
     setMidiNote = midiNote;
     padID = padNo;
     velocity = vel;
+    vpan = pan;
     playRatio = sRate/bufferSRate; 
     age = 0;
     oldgain = 1;
@@ -33,10 +34,10 @@ void voice::renderAudio(juce::AudioBuffer<float>& buffer, int startSample, int e
     int numBufferChannels = buffer.getNumChannels();
     int noOfSamples = endSample - startSample;
     float playRatioNow = playRatio*p;
-    float left = (1-pan)/2;
-    float right = (1+pan)/2;
-    float oldleft = (1-oldpan)/2;
-    float oldright = (1+oldpan)/2;
+    float left = (1-pan-vpan)/2;
+    float right = (1+pan+vpan)/2;
+    float oldleft = (1-oldpan-vpan)/2;
+    float oldright = (1+oldpan+vpan)/2;
     age++;
 
     for(int ch = 0; ch<numBufferChannels && ch<numChannels; ch += (int)numChannels/numBufferChannels){
@@ -108,17 +109,16 @@ void voiceManager::renderAll(juce::AudioBuffer<float>& buffer, int startSample, 
     }
 }
 
-void voiceManager::assignVoice(juce::AudioBuffer<float>& buffer, int padNo, int midiNote, float velocity, double sRate, double bufferSRate, float start, float end, float attack, float decay, bool mono){
+void voiceManager::assignVoice(juce::AudioBuffer<float>& buffer, int padNo, int midiNote, float velocity, double sRate, double bufferSRate, float start, float end, float attack, float decay, float pan, bool mono){
     int oldest = 0;
     bool assigned = false;
 
     if(mono){
 
         for(int i =0 ; i<numVoices; i++){
-            DBG("pad id" << voices[i]->padID);
             if(voices[oldest]->age < voices[i]->age) oldest = i;
             if(voices[i]->padID == padNo){
-                voices[i]->startVoice(buffer, padNo, midiNote, velocity, sRate, bufferSRate, start, end, attack, decay);
+                voices[i]->startVoice(buffer, padNo, midiNote, velocity, sRate, bufferSRate, start, end, attack, decay, pan);
                 updateState(i, true, buffer.getNumSamples(), start*buffer.getNumSamples(), -1, padNo);
                 return;
             }
@@ -130,13 +130,13 @@ void voiceManager::assignVoice(juce::AudioBuffer<float>& buffer, int padNo, int 
         if(voices[oldest]->age < voices[i]->age) oldest = i;
         if(!voices[i]->active){
             assigned = true;
-            voices[i]->startVoice(buffer, padNo, midiNote, velocity, sRate, bufferSRate, start, end, attack, decay);
+            voices[i]->startVoice(buffer, padNo, midiNote, velocity, sRate, bufferSRate, start, end, attack, decay, pan);
             updateState(i, true, buffer.getNumSamples(), start*buffer.getNumSamples(), -1, padNo);
             break;
         }
     }
     if(!assigned){
-        voices[oldest]->startVoice(buffer, padNo, midiNote, velocity, sRate, bufferSRate, start, end, attack, decay);
+        voices[oldest]->startVoice(buffer, padNo, midiNote, velocity, sRate, bufferSRate, start, end, attack, decay, pan);
         updateState(oldest, true, buffer.getNumSamples(), start*buffer.getNumSamples(), -1, padNo);
     }
     

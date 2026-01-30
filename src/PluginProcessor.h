@@ -6,6 +6,7 @@
 #include "data/FileLoader.h"
 #include "dsp/Voices.h"
 #include <juce_audio_utils/juce_audio_utils.h>
+#include <random>
 
 enum fileStatus{
     NotLoaded,
@@ -83,10 +84,7 @@ public:
     std::vector<std::atomic<float>*> mono;
 
     std::vector<std::atomic<float>*> gainmod;
-    std::vector<std::atomic<float>*> pitchmod;
     std::vector<std::atomic<float>*> startmod;
-    std::vector<std::atomic<float>*> attackmod;
-    std::vector<std::atomic<float>*> decaymod;
 
     std::vector<std::atomic<float>*> gainrnd;
     std::vector<std::atomic<float>*> panrnd;
@@ -106,6 +104,9 @@ private:
     int playPosition = 0;
     double currentSampleRate;
     int noOfPads;
+
+    std::mt19937 gen; // The engine
+    std::normal_distribution<float> dist; // The distribution
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioPluginAudioProcessor)

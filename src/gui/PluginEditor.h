@@ -45,10 +45,7 @@ private:
     juce::Slider decaySlider; 
 
     juce::Slider gainModSlider; 
-    juce::Slider pitchModSlider; 
     juce::Slider startModSlider; 
-    juce::Slider attackModSlider; 
-    juce::Slider decayModSlider; 
 
     juce::Slider gainRndSlider; 
     juce::Slider panRndSlider; 
@@ -70,10 +67,7 @@ private:
     juce::Label pitchRndLabel;
 
     juce::Label gainModLabel;
-    juce::Label pitchModLabel;
     juce::Label startModLabel;
-    juce::Label attackModLabel;
-    juce::Label decayModLabel;
 
     juce::TextButton killAll{"PANIC!"};
     juce::ToggleButton monoButton{"MONO"};
@@ -89,10 +83,7 @@ private:
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> decayAttachment;
     
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> gainModAttachment;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> pitchModAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> startModAttachment;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> attackModAttachment;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> decayModAttachment;
 
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> gainRndAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> panRndAttachment;

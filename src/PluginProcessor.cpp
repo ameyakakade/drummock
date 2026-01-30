@@ -18,11 +18,8 @@ juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout(){
         group->addChild(std::make_unique<juce::AudioParameterFloat> (juce::ParameterID{"Attack" + id, 1}, "Attack " + id, 0, 1, 0));
         group->addChild(std::make_unique<juce::AudioParameterFloat> (juce::ParameterID{"Decay" + id, 1}, "Decay " + id, 0, 1, 0.95));
         group->addChild(std::make_unique<juce::AudioParameterBool> (juce::ParameterID{"Mono" + id, 1}, "Mono " + id, false));
-        group->addChild(std::make_unique<juce::AudioParameterFloat> (juce::ParameterID{"VolumeMod" + id, 1}, "Volume Mod " + id, -1, 1, 0));
-        group->addChild(std::make_unique<juce::AudioParameterFloat> (juce::ParameterID{"PitchMod" + id, 1}, "Pitch Mod" + id, -1, 1, 0));
-        group->addChild(std::make_unique<juce::AudioParameterFloat> (juce::ParameterID{"AttackMod" + id, 1}, "Attack Mod" + id, -1, 1, 0));
-        group->addChild(std::make_unique<juce::AudioParameterFloat> (juce::ParameterID{"DecayMod" + id, 1}, "Decay Mod" + id, -1, 1, 0));
-        group->addChild(std::make_unique<juce::AudioParameterFloat> (juce::ParameterID{"StartMod" + id, 1}, "Start Mod " + id, -1, 1, 0));
+        group->addChild(std::make_unique<juce::AudioParameterFloat> (juce::ParameterID{"VolumeMod" + id, 1}, "Volume Mod " + id, 0, 3, 1.5));
+        group->addChild(std::make_unique<juce::AudioParameterFloat> (juce::ParameterID{"StartMod" + id, 1}, "Start Mod " + id, 0, 1, 0));
         group->addChild(std::make_unique<juce::AudioParameterFloat> (juce::ParameterID{"VolumeRnd" + id, 1}, "Volume Randomize " + id, 0, 1, 0));
         group->addChild(std::make_unique<juce::AudioParameterFloat> (juce::ParameterID{"PanRnd" + id, 1}, "Pan Randomize " + id, 0, 1, 0));
         group->addChild(std::make_unique<juce::AudioParameterFloat> (juce::ParameterID{"PitchRnd" + id, 1}, "Pitch Randomize " + id, 0, 1, 0));
@@ -52,7 +49,9 @@ AudioPluginAudioProcessor::AudioPluginAudioProcessor()
                      #endif
                        ),
      states(*this, nullptr, "parameters", createParameterLayout()),
-     thumbnailCache(5)
+     thumbnailCache(5),
+     gen(std::random_device{}()),
+     dist(0, 0.33f)
 
 #endif
 {
@@ -83,13 +82,10 @@ AudioPluginAudioProcessor::AudioPluginAudioProcessor()
     fillPointerArray(mono, "Mono", 8);
 
     fillPointerArray(gainmod, "VolumeMod", 8);
-    fillPointerArray(pitchmod, "PitchMod", 8);
     fillPointerArray(startmod, "StartMod", 8);
-    fillPointerArray(attackmod, "AttackMod", 8);
-    fillPointerArray(decaymod, "DecayMod", 8);
 
     fillPointerArray(gainrnd, "VolumeRnd", 8);
-    fillPointerArray(gainrnd, "PanRnd", 8);
+    fillPointerArray(panrnd, "PanRnd", 8);
     fillPointerArray(pitchrnd, "PitchRnd", 8);
 
     pbrange = states.getRawParameterValue("Pitch_Range");
@@ -212,10 +208,9 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
 
     int noOfSamples = buffer.getNumSamples();
 
+
     float range = pbrange->load(std::memory_order_relaxed);
     float pbendfactor = std::pow(2, range/12.0);
-    float vsens = 2;
-    DBG((int)mono[0]->load(std::memory_order_relaxed));
     
     int head = 0;
     
@@ -227,15 +222,29 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
         if(msg.isNoteOn()){
             int note = msg.getNoteNumber();    
             auto data = samplePool.getFileByMidiNote(note);
-            float ppitch = pitch[data->id]->load(std::memory_order_relaxed);
-            float pstart = start[data->id]->load(std::memory_order_relaxed);
+            float v = msg.getFloatVelocity();
+
+            float sgain = gainmod[data->id]->load(std::memory_order_relaxed);
+            float sstart = startmod[data->id]->load(std::memory_order_relaxed)*0.6f;
+
+            float vgain = std::pow(v, sgain);
+            float vstart = sstart*(1-v);
+
+            float rgain = std::max(1 + gainrnd[data->id]->load(std::memory_order_relaxed)*dist(gen), 0.0f);
+            float rpan = panrnd[data->id]->load(std::memory_order_relaxed)*dist(gen);
+            float rpitch = std::exp2(pitchrnd[data->id]->load(std::memory_order_relaxed)*dist(gen)*0.4f);
+
+            float ppitch = pitch[data->id]->load(std::memory_order_relaxed)*rpitch;
+            float ppan = rpan;
+            float pstart = std::min(start[data->id]->load(std::memory_order_relaxed) + vstart, 1.0f);
             float pend = end[data->id]->load(std::memory_order_relaxed);
             float pattack = attack[data->id]->load(std::memory_order_relaxed);
             float pdecay = decay[data->id]->load(std::memory_order_relaxed);
+            float pgain = vgain*rgain;
+
             bool pmono = mono[data->id]->load(std::memory_order_relaxed);
-            float v = std::pow(msg.getFloatVelocity(), vsens);
             if(data->file){
-                pool.assignVoice(*data->file, data->id, note, v, data->sampleRate*ppitch, currentSampleRate, pstart, pend, pattack, pdecay, pmono);
+                pool.assignVoice(*data->file, data->id, note, pgain, data->sampleRate*ppitch, currentSampleRate, pstart, pend, pattack, pdecay, ppan, pmono);
                 padStates[data->id]->store(true, std::memory_order_relaxed);
             }
         }
