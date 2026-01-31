@@ -1,1 +1,67 @@
-#need to fix
+name: Build JUCE Plugin
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build_and_test:
+    name: Build on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false # If Windows fails, don't cancel Linux immediately
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        include:
+          - os: ubuntu-latest
+            name: Linux
+          - os: windows-latest
+            name: Windows
+
+    steps:
+      # 1. Checkout the code
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive # Critical if JUCE is a submodule
+
+      # 2. Install Linux Dependencies (Specific to JUCE requirements)
+      - name: Install Linux Dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libasound2-dev \
+            libjack-jackd2-dev \
+            ladspa-sdk \
+            libcurl4-openssl-dev \
+            libfreetype6-dev \
+            libx11-dev \
+            libxcomposite-dev \
+            libxcursor-dev \
+            libxext-dev \
+            libxinerama-dev \
+            libwebkit2gtk-4.0-dev \
+            libglu1-mesa-dev \
+            mesa-common-dev
+
+      # 3. Configure CMake
+      # Note: -B build tells CMake to put files in a 'build' folder
+      - name: Configure CMake
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Release
+
+      # 4. Build the Plugin
+      # --config Release is required for Windows (Multi-configuration generator)
+      - name: Build
+        run: cmake --build build --config Release --parallel 4
+
+      # 5. Upload Artifacts
+      # JUCE CMake usually outputs to: build/TargetName_artefacts/
+      - name: Upload VST3
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.name }}-VST3
+          path: build/**/*_artefacts/**/*.vst3
+          if-no-files-found: error
