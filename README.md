@@ -1,15 +1,25 @@
-# Drum Sampler (WIP)
+# Drummock
 
-Work-in-progress JUCE-based drum sampler focused on making sample loading fast and simple.
+A fast and simple drum sampler meant for trap/hip-hip production. Built with c++ and JUCE.
 
-This repository is currently under active development.
+## Installation
+Download the appropriate binary from [releases](https://github.com/ameyakakade/drummock/releases) and move it to your plugin folder
 
-## Building
 ### MacOS
-Plugin is built using xcode. Make sure you have Xcode command line tools installed.
+Plugins are usually in `/Library/Audio/Plug-Ins/`
+Move the `au` and `vst3` in the appropriate folders.
+If daw says "Drummock cannot be opened" this is because the MacOS binaries are not notarized.
+To fix run the following commands in the terminal:
+```bash
+# For VST3
+sudo xattr -cr /Library/Audio/Plug-Ins/VST3/Drummock.vst3
 
-This repo uses JUCE as a submodule.
-Use `git clone --recurse-submodules https://github.com/ameyakakade/drumsampler` while cloning or `git submodule update --init --recursive` after cloning.
+# For AU
+sudo xattr -cr /Library/Audio/Plug-Ins/Components/Drummock.component
+```
 
-Run `cmake -G Xcode build` to generate a Xcode project. 
-To build, run `cmake --build build` or compile in Xcode
+### Windows
+Move the `vst3` into `C:\Program Files\Common Files\VST3`
+
+### Linux
+Move the `vst3` into `~/.vst3` or `/usr/lib/vst3`
