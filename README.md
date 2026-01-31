@@ -1,10 +1,8 @@
 # Drummock
 A fast and simple drum sampler meant for trap/hip-hip production. Built with c++ and JUCE.
 
-<details>
 <summary><h2>Screenshot</h2></summary>
 <img width="963" height="822" alt="Screenshot 2026-01-31 at 7 00 45 PM" src="https://github.com/user-attachments/assets/2b318039-139f-41d3-8af0-1d4cacd905d8" />
-</details>
 
 
 
@@ -38,5 +36,5 @@ Move the `vst3` into `~/.vst3` or `/usr/lib/vst3`
 - Randomizing for volume, pan and pitch for realistic movement.
 
 ## Limitations
-- Voice quitting doesn't have a fade out.
+- Voice stealing doesn't have a fade out.
 - Absolute paths are stored, plugin will not find the sample if they are moved.
