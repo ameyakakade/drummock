@@ -454,7 +454,7 @@ void AudioPluginAudioProcessorEditor::filesDropped(const juce::StringArray &file
         int ry = rect.getY();
         int h = rect.getHeight();
         int w = rect.getWidth();
-        if((x-rx<w) and (y-ry<h) and (x-rx>0) and (y-ry>0)) id = i;
+        if((x-rx<w) && (y-ry<h) && (x-rx>0) && (y-ry>0)) id = i;
     }
     if(id!=-1){
         for(int i=0; i<s; i++){
