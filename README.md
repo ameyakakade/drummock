@@ -1,5 +1,4 @@
 # Drummock
-
 A fast and simple drum sampler meant for trap/hip-hip production. Built with c++ and JUCE.
 
 <details>
