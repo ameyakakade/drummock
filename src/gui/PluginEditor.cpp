@@ -338,7 +338,7 @@ void AudioPluginAudioProcessorEditor::paint (juce::Graphics& g)
         g.restoreState();
     }
 
-    if(highX!=-1 or highY!=-1){
+    if(highX!=-1 || highY!=-1){
         g.setColour (Style::accentColor);
         g.setOpacity(0.8);
         int r = 40;
