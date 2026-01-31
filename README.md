@@ -2,6 +2,13 @@
 
 A fast and simple drum sampler meant for trap/hip-hip production. Built with c++ and JUCE.
 
+<details>
+<summary><h2>Screenshot</h2></summary>
+<img width="963" height="822" alt="Screenshot 2026-01-31 at 7 00 45 PM" src="https://github.com/user-attachments/assets/2b318039-139f-41d3-8af0-1d4cacd905d8" />
+</details>
+
+
+
 ## Installation
 Download the appropriate binary from [releases](https://github.com/ameyakakade/drummock/releases) and move it to your plugin folder
 
@@ -23,3 +30,14 @@ Move the `vst3` into `C:\Program Files\Common Files\VST3`
 
 ### Linux
 Move the `vst3` into `~/.vst3` or `/usr/lib/vst3`
+
+## Features
+- Easy file loading, just drag and drop! Drag in multiple files to load them at the same time.
+- Polyphony support.
+- Linear interpolation for resampling and pitch shifting for that mpc sound.
+- Built in hard clipper
+- Randomizing for volume, pan and pitch for realistic movement.
+
+## Limitations
+- Voice quitting doesn't have a fade out.
+- Absolute paths are stored, plugin will not find the sample if they are moved.
