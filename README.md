@@ -28,6 +28,10 @@ Move the `vst3` into `C:\Program Files\Common Files\VST3`
 ### Linux
 Move the `vst3` into `~/.vst3` or `/usr/lib/vst3`
 
+## Usage
+- Drag and drop drum samples.
+- Pad 1 is mapped to middle C.
+
 ## Features
 - Easy file loading, just drag and drop! Drag in multiple files to load them at the same time.
 - Polyphony support.
