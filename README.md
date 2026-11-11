@@ -12,8 +12,7 @@ Download the appropriate binary from [releases](https://github.com/ameyakakade/d
 ### MacOS
 Plugins are usually in `/Library/Audio/Plug-Ins/`
 Move the `au` and `vst3` in the appropriate folders.
-If daw says "Drummock cannot be opened" this is because the MacOS binaries are not notarized.
-To fix run the following commands in the terminal:
+If daw says "Drummock cannot be opened", run the following commands in the terminal to fix:
 ```bash
 # For VST3
 sudo xattr -cr /Library/Audio/Plug-Ins/VST3/Drummock.vst3
